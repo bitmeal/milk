@@ -1,0 +1,98 @@
+-- serialization: supported types --
+
+*Amazon Ion:* (http://amzn.github.io/ion-docs/docs/spec.html)
+structures:
+	struct - Unordered collections of tagged values
+	list - Ordered collections of values
+	sexp - Ordered collections of values with application-defined semantics
+scalar types:
+	null - A generic null value
+	bool - Boolean values
+	int - Signed integers of arbitrary size
+	float - Binary-encoded floating point numbers (IEEE 64-bit)
+	decimal - Decimal-encoded real numbers of arbitrary precision
+	timestamp - Date/time/timezone moments of arbitrary precision
+non-scalar types:
+	string - Unicode text literals
+	blob - Binary data of user-defined encoding
+	clob - Text data of user-defined encoding
+	symbol - Interned, Unicode symbolic atoms (aka identifiers)
+user typing: string annotation
+
+*FlatBuffers*: (https://google.github.io/flatbuffers/md__schemas.html)
+structures:
+	Tables - consist of a name and a list of fields. Each field has a name, a type [and value]
+	Structs - structs may only contain scalars or other structs [heterogeneous array/list overload]
+scalar types:
+	8 bit: byte ubyte bool
+	16 bit: short ushort
+	32 bit: int uint float
+	64 bit: long ulong double
+non-scalar types:
+	vector - of any other type
+	string - only hold UTF-8 or 7-bit ASCII. other text or general binary use vectors ([byte] or [ubyte])
+	references - to other tables or structs, enums or unions
+user typing: ?
+	
+*msgpack*: (https://github.com/msgpack/msgpack/blob/master/spec.md)
+structures:
+	Map - represents key-value pairs of objects; heterogeneous keys and values
+	Array - represents a heterogeneous sequence of objects
+scalar types:
+	Integer
+	Nil
+	Boolean
+	Float
+non-scalar types:
+	String - extending Raw type represents a UTF-8 string
+	Binary - extending Raw type represents a byte array
+	Extension - represents a tuple of type information and a byte array
+user typing: integer
+
+
+*YAML*: (https://yaml.org/spec/1.2/spec.html / https://yaml.org/type/)
+structures:
+	map - associative container, key is unique and mapped to exactly one value, no restrictions on key type
+	omap - ordered map
+	pairs - ordered sequence of key:value pairs allowing duplicates. (possible representing as a sequence of one-key mappings)
+	sequence - array of heterogeneous types
+	set - unordered set of non-equal values (mapping with all-null values)
+scalar types:
+	null
+	bool
+	int
+	float
+[non-scalar types:]
+	string
+	binary
+misc:
+	(merge)
+	(references)
+user typing: string
+	
+	
+*BSON*: (http://bsonspec.org/spec.html)
+structures:
+	e_list - like map
+	array - e_list (embedded in BSON document) with integer keys 0-[size]
+scalar types:
+	byte		- 1 byte (8-bits)
+	int32		- 4 bytes (32-bit signed integer, two's complement)
+	int64		- 8 bytes (64-bit signed integer, two's complement)
+	uint64		- 8 bytes (64-bit unsigned integer)
+	double		- 8 bytes (64-bit IEEE 754-2008 binary floating point)
+	decimal128	- 16 bytes (128-bit IEEE 754-2008 decimal floating point)
+non-scalar types:
+	string	::=	int32 (byte*) "\x00"	String - The int32 is the number bytes in the (byte*) + 1 (for the trailing '\x00'). The (byte*) is zero or more UTF-8 encoded characters.
+	cstring	::=	(byte*) "\x00"	Zero or more modified UTF-8 encoded characters followed by '\x00'. The (byte*) MUST NOT contain '\x00', hence it is not full UTF-8.
+	binary	::=	int32 subtype (byte*)	Binary - The int32 is the number of bytes in the (byte*).
+	subtype	::=	"\x00"	Generic binary subtype
+	|	"\x01"	Function
+	|	"\x02"	Binary (Old)
+	|	"\x03"	UUID (Old)
+	|	"\x04"	UUID
+	|	"\x05"	MD5
+	|	"\x80"
+user typing: integer
+	
+	

@@ -1,0 +1,12 @@
+structures:
+	map - key/value-pairs. heterogeneous/mixed types
+	array/list - of heterogeneous/mixed types
+scalar types:
+	bool
+	byte
+	int
+	float
+non-scalar types:
+	string
+	binary
+	binary + extension
