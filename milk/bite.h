@@ -104,7 +104,7 @@ namespace milk
 
 
 			template<typename T>
-			void push_back(T& val)
+			void push_back(const T& val)
 			{
 				std::vector<milk::bite> bite_vec;
 				
@@ -119,15 +119,22 @@ namespace milk
 				// implicit conversion from scalar
 				if (is_scalar())
 				{
-					bite_vec.push_back(this*);
+					bite_vec.push_back(*this);
 					bite_vec.push_back(milk::bite(val));
 					return;
 				}
 					
 				// leave handling to grain
-				grain->push_back<T>(T);
+				grain->push_back<T>(val);
 			};
 
+			/*
+			template <std::size_t N>
+			void push_back(const char *val[N])
+			{
+				push_back(val);
+			};
+			*/
 			void pop_back()
 			{
 				grain->pop_back();

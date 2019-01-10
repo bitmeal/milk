@@ -109,7 +109,7 @@ namespace milk
 			template<typename T, std::enable_if_t<
 				sizeof(typename T::key_type) != 0
 			>* = nullptr >
-				grain_base(const T& val)
+			grain_base(const T& val)
 			{
 				type = t_map;
 				d_map = std::make_unique<map_t>(val.begin(), val.end());
@@ -118,9 +118,10 @@ namespace milk
 			// container types with iterators
 			template<typename T, std::enable_if_t<
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
-				!std::is_same<decltype(std::declval<T>().end()), void>::value
+				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
+				sizeof(typename T::key_type) == 0
 				>* = nullptr,
-				typename _H = std::remove_cv_t<decltype(std::declval<T>().data())>
+				typename _H = std::remove_cv_t<T::iterator::value_type>
 				//_H = std::remove_cv_t<std::iterator_traits<T>::value_type>
 			>
 			grain_base(const T& val)
@@ -159,7 +160,7 @@ namespace milk
 			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
-			template<>
+			//template<>
 			grain_base(const std::string& val)
 			{
 				type = n_str;
@@ -440,7 +441,7 @@ namespace milk
 			}
 
 			template<typename T>
-			void push_back(T& val)
+			void push_back(const T& val)
 			{
 				if (type != t_list)
 					throw std::runtime_error("bite is no list; cannot use push_back here! implicit conversion from scalar to list should have already taken place if called through bite interface");

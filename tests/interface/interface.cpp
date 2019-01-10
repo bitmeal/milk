@@ -152,6 +152,21 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "DATA-STRUCTURES TESTS" << std::endl;
 
+	data = "foo";
+
+	std::vector<int> iv = { 1 ,2 ,3, 4 };
+	data = iv;
+	//std::cout << "IMPLICIT LIST CONVERSION TEST" << std::endl;
+	//data.push_back(1.234);
+	//assert(data.is_list());
+	//assert(data.size() == 2);
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+
+	//std::cout << " TEST" << std::endl;
+	//assert();
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
 	//std::cout << " TEST" << std::endl;
 	//assert();
 	//std::cout << "TEST OK!" << std::endl << std::endl;
