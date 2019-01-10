@@ -1,27 +1,13 @@
-#include <type_traits>
-
-#include <memory>
-
-#include <string>
-#include <array>
-#include <vector>
-#include <map>
-
-#include <exception>
-#include <typeinfo>
-
-//#include "bite.h"
-#include <cassert>
 
 namespace milk
 {
-
-	class grain
+	template<typename B>
+	class grain_base
 	{
 		public:
-			typedef std::vector<unsigned char>			str_bin_t;
-			typedef std::map<std::string, milk::bite>	map_t;
-			typedef std::vector<milk::bite>				list_t;
+			typedef std::vector<unsigned char>	str_bin_t;
+			typedef std::map<std::string, B>	map_t;
+			typedef std::vector<B>				list_t;
 
 
 		private:
@@ -39,11 +25,12 @@ namespace milk
 				n_str,
 				n_bin,
 				t_map,
-				t_list,
+				t_list
+				//, undefined
 			};
 
 			t_scalar_data scalar_data;
-			grain::t_type type;
+			grain_base::t_type type;
 			
 			char bin_ext;
 
@@ -55,10 +42,11 @@ namespace milk
 
 		public:
 			// DEFAULT
-			grain() {};
+			grain_base() //: type(undefined)
+			{};
 
 			// COPY CONSTRUCTOR
-			grain(const grain& source)
+			grain_base(const grain_base<B>& source)
 			{
 				type = source.type;
 				scalar_data = source.scalar_data;
@@ -94,7 +82,7 @@ namespace milk
 
 			// integral types (bool has specialization - why?)
 			template <typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
-			grain(const T& val)
+			grain_base(const T& val)
 			{
 				if (typeid(T) == typeid(char) || typeid(T) == typeid(unsigned char))
 				{
@@ -110,7 +98,7 @@ namespace milk
 
 			// floating point types
 			template <typename T, std::enable_if_t<std::is_floating_point<T>::value>* = nullptr>
-			grain(const T& val)
+			grain_base(const T& val)
 			{
 					type = s_fp;
 					scalar_data.d_fp = val;
@@ -121,7 +109,7 @@ namespace milk
 			template<typename T, std::enable_if_t<
 				sizeof(typename T::key_type) != 0
 			>* = nullptr >
-				grain(const T& val)
+				grain_base(const T& val)
 			{
 				type = t_map;
 				d_map = std::make_unique<map_t>(val.begin(), val.end());
@@ -135,7 +123,7 @@ namespace milk
 				typename _H = std::remove_cv_t<decltype(std::declval<T>().data())>
 				//_H = std::remove_cv_t<std::iterator_traits<T>::value_type>
 			>
-			grain(const T& val)
+			grain_base(const T& val)
 			{
 				// special case handling: container is of type char (not char*!)
 				if (std::is_same<_H, char*>::value || std::is_same<_H, unsigned char*>::value)
@@ -155,7 +143,7 @@ namespace milk
 				std::is_same<std::size_t, decltype(std::declval<T>().size())>::value &&
 				std::is_same<const char*, decltype(std::declval<T>().data())>::value
 			>* = nullptr>
-			grain(const T& val)
+			grain_base(const T& val)
 			{
 				type = n_bin;
 				d_str_bin = std::make_unique<str_bin_t>();
@@ -164,18 +152,22 @@ namespace milk
 					d_str_bin->push_back(*(val.data() + idx));
 			};
 
-			template <typename T, std::enable_if_t<std::is_same<const char*, T>::value>* = nullptr>
-			grain(const T& val) : grain(std::string(val)) { };
+			// handling: milk::bite my_bite = "string/chararr";
+			grain_base(const char* &val) : grain_base(std::string(val)) { };
+
+			// handling: char* ch = "chararr"; mil::bite my_bite = ch;
+			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
+			grain_base(const T& val) : grain_base(std::string(val)) { };
 
 			template<>
-			grain(const std::string& val)
+			grain_base(const std::string& val)
 			{
 				type = n_str;
 				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
 			};
 
 			template<>
-			grain(const bool& val)
+			grain_base(const bool& val)
 			{
 				type = s_bool;
 				scalar_data.d_bool = val;
@@ -190,7 +182,7 @@ namespace milk
 			//(	std::is_same<decltype(std::declval<T>().begin()), void>::value ||
 			//	std::is_same<decltype(std::declval<T>().end()), void>::value	)
 			>* = nullptr>
-			grain(const T& val)
+			grain_base(const T& val)
 			{
 			static_assert(false, "calling generalized data() size() template - not implemented yet!");
 			};
@@ -364,7 +356,7 @@ namespace milk
 				}
 			}
 
-			milk::bite_iterator& begin(milk::bite* parent)
+			milk::bite_iterator_base<B, milk::grain_base<B>> begin(B* parent)
 			{
 				switch (type)
 				{
@@ -379,7 +371,7 @@ namespace milk
 				}
 			}
 
-			milk::bite_iterator& end(milk::bite* parent)
+			milk::bite_iterator_base<B, milk::grain_base<B>> end(B* parent)
 			{
 				switch (type)
 				{
@@ -394,7 +386,104 @@ namespace milk
 				}
 			}
 
-			~grain() {};
+			milk::bite_iterator_base<B, milk::grain_base<B>> find(const std::string& key, B* parent)
+			{
+				if (type == t_map)
+					return milk::bite_iterator(d_map->find(key));
+				else
+					return end(parent);
+			}
+
+			// throws out of range exception or runtime error when called on non container grain
+			B& idx(const std::size_t idx)
+			{
+				map_t::iterator map_idx_it;
+				switch (type)
+				{
+				case t_map:
+					map_idx_it = d_map->begin();
+					std::advance(map_idx_it, idx);
+					return map_idx_it->second;
+					break;
+				case t_list:
+					return d_list->at(idx);
+					break;
+				default:
+					throw std::runtime_error("bite is no container type! no index access possible!");
+				}
+			}
+
+			B idx_probe(const std::string& key)
+			{
+				if (type != t_map) return B();
+
+				auto found_it = d_map->find(key);
+				if (found_it != d_map->end())
+					return found_it->second;
+				
+				return B();
+			}
+
+			B& idx(const std::string& key)
+			{
+				if (type != t_map)
+				{
+					d_list.release();
+					d_str_bin.release();
+
+					type = t_map;
+
+					d_map = std::make_unique<map_t>();
+				}
+
+				return (*d_map)[key];
+			}
+
+			template<typename T>
+			void push_back(T& val)
+			{
+				if (type != t_list)
+					throw std::runtime_error("bite is no list; cannot use push_back here! implicit conversion from scalar to list should have already taken place if called through bite interface");
+
+				d_list->push_back(B(val));
+			}
+
+			void pop_back()
+			{
+				if (type == t_list)
+					d_list->pop_back();
+			}
+
+			std::size_t erase(const std::string& key)
+			{
+				if (type != t_map)
+					return 0;
+
+				return d_map->erase(key);
+			}
+
+			milk::bite_iterator_base<B, milk::grain_base<B>> erase(milk::bite_iterator_base<B, milk::grain_base<B>> first, milk::bite_iterator_base<B, milk::grain_base<B>> last, B* parent)
+			{				
+				// erase
+				switch (type)
+				{
+				case t_map:
+					if (first.iterator_type == bite_iterator::iterator_type_t::map_i && last.iterator_type == bite_iterator::iterator_type_t::map_i)
+						return milk::bite_iterator(d_map->erase(first.map_iterator, last.map_iterator));
+					else
+						throw std::runtime_error("iterators for erase operation of wrong type!");
+					break;
+				case t_list:
+					if (first.iterator_type == bite_iterator::iterator_type_t::list_i && last.iterator_type == bite_iterator::iterator_type_t::list_i)
+						return milk::bite_iterator(d_list->erase(first.list_iterator, last.list_iterator));
+					else
+						throw std::runtime_error("iterators for erase operation of wrong type!");
+					break;
+				}
+			}
+
+
+			~grain_base() {};
 	};
 
 }

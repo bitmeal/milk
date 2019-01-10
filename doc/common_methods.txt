@@ -1,0 +1,21 @@
+map & vector:
+	+ it begin()	// iterator access
+	+ it end()		// iterator access
+
+	+ valT& at(size_t)(<keyT>)
+	+ bool empty()
+	+ size_t size()
+	+ void clear()
+	- it insert(it, <valT>)(pair<keyT,valT>)
+	+ it erase(it)
+
+map:
+	+ it find(<keyT>)
+	+ size_t erase(<keyT>)
+
+vector:
+	- void resize(size_t, <valT>&)
+	+ void push_back(<valT>&)
+	+ void pop_back()
+
+

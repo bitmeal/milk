@@ -1,21 +1,20 @@
-#include <utility>
-#include <string>
-#include <stdexcept>
-#include <iterator>
 
 namespace milk
 {
-	struct bite_iterator_value : public milk::bite, public std::pair<std::string, milk::bite>
+	template<typename T>
+	struct bite_iterator_value : public T, public std::pair<std::string, T>
 	{
 		bite_iterator_value() {};
 		explicit bite_iterator_value(const std::string key, const milk::bite& val) : milk::bite(val), std::pair<std::string, milk::bite>(key, val) {};
 		explicit bite_iterator_value(const milk::bite& val) : bite_iterator_value("", val){};
 	};
 
-	class bite_iterator : public std::iterator<std::input_iterator_tag, milk::bite_iterator_value>
+	template<typename B, typename G>
+	class bite_iterator_base : public std::iterator<std::input_iterator_tag, milk::bite_iterator_value<B>>
 	{
-		//friend class milk::grain;
-		//friend class milk::bite;
+		// allow construction only from bite and grain classes
+		friend class milk::grain;
+		friend class milk::bite;
 	
 	private:
 		enum iterator_type_t {
@@ -25,19 +24,19 @@ namespace milk
 		};
 		iterator_type_t iterator_type;
 
-		milk::grain::map_t::iterator map_iterator;
-		milk::grain::list_t::iterator list_iterator;
+		typename G::map_t::iterator map_iterator;
+		typename G::list_t::iterator list_iterator;
 
-		milk::bite* bite_ptr;
+		B* bite_ptr;
 		bool end;
 
 
 		// map iterator
-		bite_iterator(milk::grain::map_t::iterator& it) : iterator_type(map_i), map_iterator(it)	{ };
+		bite_iterator_base(typename G::map_t::iterator& it) : iterator_type(map_i), map_iterator(it)	{ };
 		// list iterator
-		bite_iterator(milk::grain::list_t::iterator& it) : iterator_type(list_i), list_iterator(it) { };
+		bite_iterator_base(typename G::list_t::iterator& it) : iterator_type(list_i), list_iterator(it) { };
 		// scalar (non container bite); from bite
-		bite_iterator(milk::bite* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) {	};
+		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) {	};
 
 		/*
 		// scalar (non container grain); from grain
@@ -119,8 +118,6 @@ namespace milk
 
 		};
 		*/
-
-		bool operator
 
 	};
 }
