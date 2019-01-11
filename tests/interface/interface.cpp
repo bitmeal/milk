@@ -13,7 +13,11 @@
 
 
 //std::cout << " TEST" << std::endl;
+//try {
+//
 //assert();
+//}
+//catch (...) { assert(false); }
 //std::cout << "TEST OK!" << std::endl << std::endl;
 
 
@@ -152,19 +156,82 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "DATA-STRUCTURES TESTS" << std::endl;
 
-	//std::cout << "VECTOR TEST" << std::endl;
+	std::vector<int> int_vec{ 1, 2, 3, 4, 5 };
+	
+	std::cout << "VECTOR ASSIGN TEST" << std::endl;
+	try {
+		data = int_vec;
+		assert(data.size() == 5);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "VECTOR ELEMENT ACCESS TEST" << std::endl;
+	try {
+		data = int_vec;
+		assert(data[0].get<int>() == 1);
+		assert(data[1].get<int>() == 2);
+		assert(data[2].get<int>() == 3);
+		assert(data[3].get<int>() == 4);
+		assert(data[4].get<int>() == 5);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "VECTOR HETEROGENEOUS TEST" << std::endl;
+	try {
+		data = int_vec;
+		data[2] = "foobar";
+		assert(data[0].get<int>() == 1);
+		assert(data[1].get<int>() == 2);
+		assert(data[2].get<std::string>() == "foobar");
+		assert(data[3].get<int>() == 4);
+		assert(data[4].get<int>() == 5);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "MAP TEST" << std::endl;
+	//std::cout << " TEST" << std::endl;
+	//try {
+	//
+	//assert();
+	//}
+	//catch (...) { assert(false); }
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//try {
+	//
+	//assert();
+	//}
+	//catch (...) { assert(false); }
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::map<std::string, int> int_map{
+		{ "foo", 1111 },
+		{ "bar", 9999 },
+		{ "key", 1}
+	};
+
+	std::cout << "MAP ASSIGN TEST" << std::endl;
 	try {
-		std::map<std::string, int> int_map{
-			{ "foo", 1111 },
-			{ "bar", 9999 },
-			{ "key", 1}
-		};
 		data = int_map;
 		assert(data.size() == 3);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ELEMENT ACCESS TEST" << std::endl;
+	try {
+		data = int_map;
 		assert(data["foo"].get<int>() == 1111);
 		assert(data["bar"].get<int>() == 9999);
 		assert(data["key"].get<int>() == 1);
@@ -172,8 +239,28 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
+	std::cout << "MAP PROBE DOES NOT CREATE TEST" << std::endl;
+	try {
+		data = int_map;
+		assert(data["non_ext"].size() == 0);
+		assert(data.size() == 3);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+
+	std::cout << "MAP CLEAR TEST" << std::endl;
+	try {
+		data = int_map;
+		data.clear();
+		assert(data.size() == 0);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
 	std::cout << "NESTED MAP TEST" << std::endl;
 	try {
+		data = int_map;
 		data["foo"]["nested"] = "chararr";
 		assert(data.size() == 3);
 		assert(data["foo"]["nested"].get<std::string>() == "chararr");
@@ -183,28 +270,90 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "HETEROGENEOUS MAP TEST" << std::endl;
 	try {
+		data = int_map;
 		data["bar"] = "chararr";
 		assert(data.size() == 3);
 		assert(data["bar"].get<std::string>() == "chararr");
+		assert(data["foo"].get<int>() == 1111);
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "MAP CLEAR TEST" << std::endl;
+	std::cout << "MAP FIND TEST" << std::endl;
 	try {
-		data.clear();
-		assert(data.size() == 0);
+		data = int_map;
+		auto found_it = data.find("foo");
+		assert(found_it->get<int>() == 1111);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ERASE BY ITERATOR TEST" << std::endl;
+	try {
+		data = int_map;
+		auto found_it = data.find("foo");
+		auto next_it = found_it; ++next_it;
+		data.erase(found_it, next_it);
+		assert(data.size() == 2);
+		assert(data["foo"].empty());
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ERASE BY ITERATOR TIL END TEST" << std::endl;
+	try {
+		data = int_map;
+		auto found_it = data.find("foo");
+		data.erase(found_it, data.end());
+		assert(data.size() == 1);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ERASE BY ITERATOR BEGIN END TEST" << std::endl;
+	try {
+		data = int_map;
+		data.erase(data.begin(), data.end());
+		assert(data.empty());
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ERASE BY KEY TEST" << std::endl;
+	try {
+		data = int_map;
+		data.erase("foo");
+		assert(data.size() == 2);
+		assert(data["foo"].empty());
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//try {
+	//
+	//assert();
+	//}
+	//catch (...) { assert(false); }
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+
 
 
 	std::cout << "ADVANCED INTERFACE FUNCTION TESTS" << std::endl;
@@ -237,16 +386,29 @@ int main(int argc, char* argv[]) {
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
+	//try {
+	//
 	//assert();
+	//}
+	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
+
 
 
 	return EXIT_SUCCESS;

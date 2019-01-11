@@ -24,19 +24,23 @@ namespace milk
 		};
 		iterator_type_t iterator_type;
 
+		// instantiated only on member access operator;
+		// else, on use for dereferencing operator, this would not qualify const!
+		// can not be instantiated on iterator instantiation as end() is not dereferenceable!
+		value_type it_interface;
+
 		typename G::map_t::iterator map_iterator;
 		typename G::list_t::iterator list_iterator;
 
 		B* bite_ptr;
 		bool end;
 
-
 		// map iterator
-		bite_iterator_base(typename G::map_t::iterator& it) : iterator_type(map_i), map_iterator(it)	{ };
+		bite_iterator_base(typename G::map_t::iterator& it) : iterator_type(map_i), map_iterator(it) { };
 		// list iterator
 		bite_iterator_base(typename G::list_t::iterator& it) : iterator_type(list_i), list_iterator(it) { };
 		// scalar (non container bite); from bite
-		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) {	};
+		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) { };
 
 		/*
 		// scalar (non container grain); from grain
@@ -111,13 +115,25 @@ namespace milk
 			}
 			return value_type();
 		};
-
-		/*
-		value_type* operator->() const
+		
+		value_type* operator->()
 		{
+			switch (iterator_type)
+			{
+			case map_i:
+				it_interface = value_type(map_iterator->first, map_iterator->second);
+				break;
+			case list_i:
+				it_interface = value_type(*list_iterator);
+				break;
+			case scalar_i:
+				it_interface = value_type(*bite_ptr);
+				break;
+			}
+			//it_interface = value_type();
 
+			return &it_interface;
 		};
-		*/
 
 	};
 }
