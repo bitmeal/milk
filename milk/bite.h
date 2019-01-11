@@ -9,7 +9,7 @@ namespace milk
 		private:
 			std::shared_ptr<milk::grain> grain;
 		public:
-			bite() : grain(nullptr) {};
+			bite() : grain(nullptr) { };
 
 			// bite is an interface for grain and holds no data other than a grain; allows construction from grain
 			bite(const milk::grain& source)
@@ -166,7 +166,8 @@ namespace milk
 			// resets the whole milk::bite container
 			void clear()
 			{
-				bite();
+				bite(); //constructor call does not reset shared pointer!
+				grain.reset(); //call to reset in constructor does not reset to NULL as well!
 			}
 
 

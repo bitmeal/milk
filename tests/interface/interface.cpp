@@ -152,12 +152,97 @@ int main(int argc, char* argv[]) {
 
 	std::cout << "DATA-STRUCTURES TESTS" << std::endl;
 
+	//std::cout << "VECTOR TEST" << std::endl;
+	//assert();
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP TEST" << std::endl;
+	try {
+		std::map<std::string, int> int_map{
+			{ "foo", 1111 },
+			{ "bar", 9999 },
+			{ "key", 1}
+		};
+		data = int_map;
+		assert(data.size() == 3);
+		assert(data["foo"].get<int>() == 1111);
+		assert(data["bar"].get<int>() == 9999);
+		assert(data["key"].get<int>() == 1);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "NESTED MAP TEST" << std::endl;
+	try {
+		data["foo"]["nested"] = "chararr";
+		assert(data.size() == 3);
+		assert(data["foo"]["nested"].get<std::string>() == "chararr");
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "HETEROGENEOUS MAP TEST" << std::endl;
+	try {
+		data["bar"] = "chararr";
+		assert(data.size() == 3);
+		assert(data["bar"].get<std::string>() == "chararr");
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP CLEAR TEST" << std::endl;
+	try {
+		data.clear();
+		assert(data.size() == 0);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//assert();
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
 	//std::cout << " TEST" << std::endl;
 	//assert();
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 
 	std::cout << "ADVANCED INTERFACE FUNCTION TESTS" << std::endl;
+
+	std::cout << "MAP ITERATOR TEST" << std::endl;
+	std::cout << "ACCESS BY PAIR AND PROJECTED VALUE" << std::endl;
+	try {
+		data.clear();
+		data["foo"] = 1;
+		data["bar"] = 0.6;
+		data["parent"]["child"] = 9999;
+		int count = 0;
+		for (auto& it : data) {
+			++count;
+			if (count < 3) {
+				// projected value
+				assert(it.is_scalar());
+				// std::pair
+				assert(it.second.is_scalar());
+			}
+			if (count == 3) {
+				// projected value
+				assert(it.is_map());
+				// std::pair
+				assert(it.second.is_map());
+			}
+		}
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//assert();
+	//std::cout << "TEST OK!" << std::endl << std::endl;
+
+	//std::cout << " TEST" << std::endl;
+	//assert();
+	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
 	//assert();
