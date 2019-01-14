@@ -120,14 +120,26 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "BINARY TEST" << std::endl;
+	std::cout << "BINARY vector<unsigned char> TEST" << std::endl;
+	try {
+		std::string source_str = "binary";
+		std::vector<unsigned char> binary_char_vec(source_str.begin(), source_str.end());
+		// char array gets \0 terminated, size = 7; binary data size = 6!
+		data = binary_char_vec;
+		assert(data.is_scalar());
+		assert(data.get<std::vector<unsigned char>>() == binary_char_vec);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "GENERIC BINARY CLASS TEST" << std::endl;
 	try {
 		std::string compare_str = "binary";
 		std::vector<unsigned char> compare_char_vec(compare_str.begin(), compare_str.end());
 		// char array gets \0 terminated, size = 7; binary data size = 6!
 		struct generic_binary_t {
-			char d[7] = "binary";
-			const char* data() const { return d; };
+			unsigned char d[7] = "binary";
+			const unsigned char* data() const { return d; };
 			std::size_t size() const { return 6; };
 		} generic_binary;
 		data = generic_binary;
@@ -187,6 +199,30 @@ int main(int argc, char* argv[]) {
 		assert(data[2].get<std::string>() == "foobar");
 		assert(data[3].get<int>() == 4);
 		assert(data[4].get<int>() == 5);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "VECTOR POP_BACK TEST" << std::endl;
+	try {
+		data = int_vec;
+		data.pop_back();
+		assert(data.size() == 4);
+		assert(data[0].get<int>() == 1);
+		assert(data[1].get<int>() == 2);
+		assert(data[2].get<int>() == 3);
+		assert(data[3].get<int>() == 4);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+	
+	std::cout << "VECTOR PUSH_BACK TEST (INT)" << std::endl;
+	try {
+		data = int_vec;
+		data.push_back(6);
+		assert(data.size() == 6);
+		assert(data[4].get<int>() == 5);
+		assert(data[5].get<int>() == 6);
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;

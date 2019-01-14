@@ -11,7 +11,7 @@ namespace milk
 		public:
 			bite() : grain(nullptr) { };
 
-			// bite is an interface for grain and holds no data other than a grain; allows construction from grain
+			// bite is an interface for grain and holds no data other than a grain; allows construction purely from grain
 			bite(const milk::grain& source)
 			{
 				//grain.release();
@@ -31,7 +31,7 @@ namespace milk
 				!std::is_same<milk::bite, T>::value &&
 				!std::is_same<milk::bite_member_proxy_base<milk::bite>, T>::value
 			>* = nullptr>
-				bite(T val)
+			bite(T& val)
 			{
 				set(val);
 			};		
@@ -42,15 +42,38 @@ namespace milk
 				grain = std::make_shared<milk::grain>(val);
 			};
 
+			void bin_extension(const unsigned char& val)
+			{
+				grain->bin_extension(val);
+			}
 			
 			template<typename T>
-			T get() {
+			T get() const {
 				return grain ? grain->get<T>() : T();
 			};
 
-			bool is_map() { return grain->is_map(); };
-			bool is_list() { return grain->is_list(); };
-			bool is_scalar() { return grain->is_scalar(); };
+			unsigned char bin_extension() const
+			{
+				return grain->bin_extension();
+			}
+
+			milk::type type() const { return grain->get_type(); }
+
+
+			bool is_map() const { return grain->is_map(); };
+			bool is_list() const { return grain->is_list(); };
+			bool is_scalar() const { return grain->is_scalar(); };
+
+			bool is_fp() const { return grain->is_fp(); }
+			bool is_float() const { return is_fp(); }
+			bool is_int() const { return grain->is_int(); }
+			bool is_bool() const { return grain->is_bool(); }
+			bool is_byte() const { return grain->is_byte(); }
+			bool is_str() const { return grain->is_str(); }
+			bool is_string() const { return is_str(); }
+			bool is_bin() const { return grain->is_bin(); }
+			bool is_binary() const { return is_bin(); }
+
 
 			std::size_t size() { return grain ? grain->size() : 0; };
 			bool empty() { return (size() == 0); }
@@ -87,7 +110,7 @@ namespace milk
 
 			milk::bite& operator [](const std::size_t idx) { return at(idx); };
 
-			// operator[] map key access
+			// at() and operator[] map key access
 			milk::bite_member_proxy at(const std::string& key)
 			{
 				return milk::bite_member_proxy(key, *this, grain ? grain->idx_probe(key).grain : std::shared_ptr<milk::grain_base<milk::bite>>(nullptr));
@@ -104,7 +127,7 @@ namespace milk
 
 
 			template<typename T>
-			void push_back(T& val)
+			void push_back(T val)
 			{
 				std::vector<milk::bite> bite_vec;
 				
@@ -119,13 +142,13 @@ namespace milk
 				// implicit conversion from scalar
 				if (is_scalar())
 				{
-					bite_vec.push_back(this*);
+					bite_vec.push_back(*this);
 					bite_vec.push_back(milk::bite(val));
 					return;
 				}
 					
 				// leave handling to grain
-				grain->push_back<T>(T);
+				grain->push_back<T>(val);
 			};
 
 			void pop_back()
@@ -170,18 +193,6 @@ namespace milk
 				grain.reset(); //call to reset in constructor does not reset to NULL as well!
 			}
 
-
-			/*
-			milk::bite& operator ()(std::string key) 
-			{
-				if (!grain)
-					grain = std::make_shared<milk::grain>();
-				return grain->idx(key);
-			};
-			*/
-			//todo: overload (int) for list access and insertion!
-
-			//todo: add push_back for list types
 
 			template<typename T>
 			milk::bite& operator = (const T& other)

@@ -9,14 +9,6 @@ namespace milk
 			typedef std::map<std::string, B>	map_t;
 			typedef std::vector<B>				list_t;
 
-
-		private:
-			union t_scalar_data {
-				int64_t			d_int;
-				double_t		d_fp;
-				unsigned char	d_byte;
-				bool			d_bool;
-			};
 			enum t_type {
 				s_int,
 				s_fp,
@@ -25,14 +17,21 @@ namespace milk
 				n_str,
 				n_bin,
 				t_map,
-				t_list
-				//, undefined
+				t_list,
+				undefined
 			};
 
+		private:
+			union t_scalar_data {
+				int64_t			d_int;
+				double_t		d_fp;
+				unsigned char	d_byte;
+				bool			d_bool;
+			};
 			t_scalar_data scalar_data;
 			grain_base::t_type type;
 			
-			char bin_ext;
+			unsigned char bin_ext;
 
 			int l_str_bin;
 			std::unique_ptr<str_bin_t>	d_str_bin;
@@ -42,11 +41,10 @@ namespace milk
 
 		public:
 			// DEFAULT
-			grain_base() //: type(undefined)
-			{};
+			grain_base() : type(undefined), bin_ext(0) {};
 
 			// COPY CONSTRUCTOR
-			grain_base(const grain_base<B>& source)
+			grain_base(const grain_base<B>& source) : grain_base()
 			{
 				type = source.type;
 				scalar_data = source.scalar_data;
@@ -82,7 +80,7 @@ namespace milk
 
 			// integral types (bool has specialization - why?)
 			template <typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
-			grain_base(const T& val)
+			grain_base(const T& val) : grain_base()
 			{
 				if (typeid(T) == typeid(char) || typeid(T) == typeid(unsigned char))
 				{
@@ -98,7 +96,7 @@ namespace milk
 
 			// floating point types
 			template <typename T, std::enable_if_t<std::is_floating_point<T>::value>* = nullptr>
-			grain_base(const T& val)
+			grain_base(const T& val) : grain_base()
 			{
 					type = s_fp;
 					scalar_data.d_fp = val;
@@ -109,7 +107,7 @@ namespace milk
 			template<typename T, std::enable_if_t<
 				sizeof(typename T::key_type) != 0
 			>* = nullptr >
-				grain_base(const T& val)
+				grain_base(const T& val) : grain_base()
 			{
 				type = t_map;
 				d_map = std::make_unique<map_t>(val.begin(), val.end());
@@ -118,37 +116,42 @@ namespace milk
 			// container types with iterators
 			template<typename T, std::enable_if_t<
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
-				!std::is_same<decltype(std::declval<T>().end()), void>::value
-				>* = nullptr,
-				typename _H = std::remove_cv_t<decltype(std::declval<T>().data())>
-				//_H = std::remove_cv_t<std::iterator_traits<T>::value_type>
-			>
-			grain_base(const T& val)
+				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
+				!std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value &&
+				!std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, unsigned char*>::value
+			>* = nullptr>
+				grain_base(const T& val) : grain_base()
 			{
-				// special case handling: container is of type char (not char*!)
-				if (std::is_same<_H, char*>::value || std::is_same<_H, unsigned char*>::value)
-				{
-					type = n_bin;
-					d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
-					return;
-				}
-
 				type = t_list;
 				d_list = std::make_unique<list_t>(val.begin(), val.end());
 			};
-						
+
+			// container types with iterators and char data; interpreted as binary!
+			template<typename T, std::enable_if_t<
+				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
+				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
+				(std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value ||
+				 std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, unsigned char*>::value)
+				>* = nullptr>
+				grain_base(const T& val) : grain_base()
+			{
+					type = n_bin;
+					d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
+			};
+
 			// has size_t size() and char* data()
 			template<typename T, std::enable_if_t<
 				!std::is_same<std::string, T>::value &&
 				std::is_same<std::size_t, decltype(std::declval<T>().size())>::value &&
-				std::is_same<const char*, decltype(std::declval<T>().data())>::value
+				(std::is_same<const char*, decltype(std::declval<T>().data())>::value ||
+				std::is_same<const unsigned char*, decltype(std::declval<T>().data())>::value)
 			>* = nullptr>
-			grain_base(const T& val)
+			grain_base(const T& val) : grain_base()
 			{
 				type = n_bin;
 				d_str_bin = std::make_unique<str_bin_t>();
 				d_str_bin->reserve(val.size());
-				for (int idx = 0; idx < val.size(); ++idx)
+				for (std::size_t idx = 0; idx < val.size(); ++idx)
 					d_str_bin->push_back(*(val.data() + idx));
 			};
 
@@ -160,34 +163,23 @@ namespace milk
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
 			template<>
-			grain_base(const std::string& val)
+			grain_base(const std::string& val) : grain_base()
 			{
 				type = n_str;
 				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
 			};
 
 			template<>
-			grain_base(const bool& val)
+			grain_base(const bool& val) : grain_base()
 			{
 				type = s_bool;
 				scalar_data.d_bool = val;
-			};	
-
-			/* SUPERSEEDED BY ITERATOR INTERFACE. ONLY char POINTERS VALID FOR CONVERSION TO GENERIC BINARY
-			// generalized has size_t size() and T* data()
-			template<typename T, std::enable_if_t<
-			std::is_same<std::size_t, decltype(std::declval<T>().size())>::value &&
-			std::is_pointer<decltype(std::declval<T>().data())>::value //&&
-			// not iterable:
-			//(	std::is_same<decltype(std::declval<T>().begin()), void>::value ||
-			//	std::is_same<decltype(std::declval<T>().end()), void>::value	)
-			>* = nullptr>
-			grain_base(const T& val)
-			{
-			static_assert(false, "calling generalized data() size() template - not implemented yet!");
 			};
-			*/
 
+			void bin_extension(const unsigned char& val)
+			{
+				bin_ext = val;
+			}
 
 			/*
 			GETTERS
@@ -199,17 +191,20 @@ namespace milk
 			 - bool; conversion from all types with: false if value or size of held type = 0, true otherwise
 
 			*/
+
+			t_type get_type() const { return type; }
+
 			// CATCH INCOMPATIBLE CONVERSIONS AT COMPILE TIME!
 			template <typename T>
 			typename std::enable_if<!std::is_arithmetic<T>::value, T>::type
-			get()
+			get() const
 			{
 				static_assert(false, "you tried to convert to an incompatible type!");
 			}
 
 			template <typename T>
 			typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-			get()
+			get() const
 			{
 				switch (type) {
 				case s_int:
@@ -225,7 +220,7 @@ namespace milk
 			};
 			
 			template<>
-			unsigned char get<unsigned char>()
+			unsigned char get<unsigned char>() const
 			{
 				if (type == s_byte)
 					return scalar_data.d_byte;
@@ -234,7 +229,7 @@ namespace milk
 			};
 			
 			template<>
-			std::vector<unsigned char> get<std::vector<unsigned char>>()
+			std::vector<unsigned char> get<std::vector<unsigned char>>() const
 			{
 				if (type == n_bin || type == n_str)
 				{
@@ -269,7 +264,7 @@ namespace milk
 			};
 
 			template<>
-			std::string get<std::string>()
+			std::string get<std::string>() const
 			{
 				switch (type) {
 				case s_int:
@@ -296,7 +291,7 @@ namespace milk
 			};
 
 			template<>
-			bool get<bool>()
+			bool get<bool>() const
 			{
 				switch (type) {
 				case s_bool:
@@ -326,22 +321,60 @@ namespace milk
 				}
 			}
 
-			bool is_map()
+			unsigned char bin_extension() const
+			{
+				return bin_ext;
+			}
+
+			bool is_map() const
 			{
 				return (type == t_map);
 			};
 
-			bool is_list()
+			bool is_list() const
 			{
 				return (type == t_list);
 			}
 
-			bool is_scalar()
+			bool is_scalar() const
 			{
 				return (type != t_map && type != t_list);
 			}
 
-			std::size_t size()
+			bool is_fp() const
+			{
+				return (type == s_fp);
+			}
+
+			bool is_float() { return is_fp(); }
+
+			bool is_int() const
+			{
+				return (type == s_int);
+			}
+
+			bool is_bool() const
+			{
+				return (type == s_bool);
+			}
+
+			bool is_byte() const
+			{
+				return (type == s_byte);
+			}
+
+			bool is_str() const
+			{
+				return (type == n_str);
+			}
+
+			bool is_bin() const
+			{
+				return (type == n_bin);
+			}
+
+
+			std::size_t size() const
 			{
 				switch (type)
 				{
@@ -440,7 +473,7 @@ namespace milk
 			}
 
 			template<typename T>
-			void push_back(T& val)
+			void push_back(const T& val)
 			{
 				if (type != t_list)
 					throw std::runtime_error("bite is no list; cannot use push_back here! implicit conversion from scalar to list should have already taken place if called through bite interface");

@@ -33,9 +33,11 @@ namespace milk
 	typedef bite_member_proxy_base<milk::bite> bite_member_proxy;
 	typedef grain_base<milk::bite> grain;
 	typedef bite_iterator_base<milk::bite, milk::grain> bite_iterator;
+
 }
 
 #include "milk/grain.h"
+namespace milk { typedef grain::t_type type; }
 #include "milk/bite_iterator.h"
 #include "milk/bite_member_proxy.h"
 #include "milk/bite.h"

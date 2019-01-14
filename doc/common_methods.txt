@@ -4,7 +4,7 @@ sm	+ it end()		// iterator access
 
 	+ valT& at(size_t)(<keyT>)
 sm	+ bool empty()
-sm	+ size_t size()
+smv	+ size_t size()
 smv	+ void clear()
 	- it insert(it, <valT>)(pair<keyT,valT>)
 m	+ it erase(it)
