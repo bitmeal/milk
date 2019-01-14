@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 set (CMAKE_CXX_STANDARD 11)
 
 # name project and provide version number
-set(TEST_NAME interface)
+set(TEST_NAME milk)
 project(${TEST_NAME})
 
 
