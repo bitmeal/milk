@@ -446,6 +446,45 @@ namespace milk
 				}
 			}
 
+			B& back()
+			{
+				// if is scalar, back is handled in bite as interface to grain
+				// if grain contains a map, back will be the last iterable element in the map! 
+				map_t::iterator map_idx_it;
+				switch (type)
+				{
+				case t_map:
+					map_idx_it = d_map->begin();
+					std::advance(map_idx_it, d_map->size() - 1);
+					return map_idx_it->second;
+					break;
+				case t_list:
+					return d_list->back();
+					break;
+				default:
+					throw std::runtime_error("bite is no container type! no index access possible!");
+				}
+			}
+
+			B& front()
+			{
+				// if is scalar, back is handled in bite as interface to grain
+				// if grain contains a map, front will be the forst iterable element in the map!
+				map_t::iterator map_idx_it;
+				switch (type)
+				{
+				case t_map:
+					map_idx_it = d_map->begin();
+					return map_idx_it->second;
+					break;
+				case t_list:
+					return d_list->front();
+					break;
+				default:
+					throw std::runtime_error("bite is no container type! no index access possible!");
+				}
+			}
+
 			B idx_probe(const std::string& key)
 			{
 				if (type != t_map) return B();

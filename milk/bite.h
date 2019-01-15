@@ -110,6 +110,9 @@ namespace milk
 
 			milk::bite& operator [](const std::size_t idx) { return at(idx); };
 
+			milk::bite& back() { return grain->is_scalar() ? *this : grain->back(); }
+			milk::bite& front() { return grain->is_scalar() ? *this : grain->front(); }
+
 			// at() and operator[] map key access
 			milk::bite_member_proxy at(const std::string& key)
 			{
@@ -119,6 +122,15 @@ namespace milk
 			milk::bite at(const std::string& key) const
 			{
 				return grain ? grain->idx_probe(key) : milk::bite();
+			};
+
+			milk::bite& bite_ref_at(const std::string& key)
+			{
+				//makes this instance a map, not matter what! and inserts the requested key!
+				if(!grain)
+					grain = std::make_shared<milk::grain>();
+
+				return grain->idx(key);
 			};
 
 			milk::bite_member_proxy operator [](const std::string& key) { return at(key); };
@@ -144,6 +156,7 @@ namespace milk
 				{
 					bite_vec.push_back(*this);
 					bite_vec.push_back(milk::bite(val));
+					set(bite_vec);
 					return;
 				}
 					

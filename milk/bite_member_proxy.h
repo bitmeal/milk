@@ -49,7 +49,7 @@ namespace milk
 		{
 			if (this->grain != other.grain)
 			{
-				set(other);
+				bite(other);
 				parent.mutable_idx(key) = *this;
 			}
 
@@ -61,7 +61,9 @@ namespace milk
 		{
 			if (this->grain != other.grain)
 			{
-				set(other);
+				//set(other);
+				grain = other.grain;
+				//
 				parent.mutable_idx(key) = *this;
 			}
 

@@ -17,8 +17,6 @@ int main(int argc, char* argv[]) {
 	msgpack::sbuffer msgpack_buffer;
 	msgpack::packer<msgpack::sbuffer> msgpack_packer(msgpack_buffer);
 
-	msgpack_packer.pack(1337);
-	msgpack_packer.pack("foo");
 
 	msgpack_packer.pack_map(2);
 	msgpack_packer.pack("key0");
@@ -32,12 +30,15 @@ int main(int argc, char* argv[]) {
 	msgpack_packer.pack(3);
 	msgpack_packer.pack("last");
 
+	msgpack_packer.pack(1337);
+	msgpack_packer.pack("foo");
 
+	std::vector<char> bin_data = {'f', 'o', 'o', ' ', 'b', 'a', 'r'};
+	msgpack::type::ext ext_bin(42, bin_data.data(), bin_data.size());
+	msgpack_packer.pack(ext_bin);
 
-
-
-
-
+	
+	milk::bite data = milk::from_msgpack(msgpack_buffer.data(), msgpack_buffer.size());
 
 
 	return EXIT_SUCCESS;
