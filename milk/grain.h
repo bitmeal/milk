@@ -229,6 +229,36 @@ namespace milk
 			};
 			
 			template<>
+			milk::binary_proxy get<milk::binary_proxy>() const
+			{
+
+				if (type == n_bin || type == n_str)
+				{
+					return milk::binary_proxy(d_str_bin->data(), d_str_bin->size());
+				}
+
+				switch (type) {
+				case s_int:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_int), sizeof(scalar_data.d_int));
+					break;
+				case s_fp:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_fp), sizeof(scalar_data.d_fp));
+					break;
+				case s_byte:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_byte), sizeof(scalar_data.d_byte));
+					break;
+				case s_bool:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_bool), sizeof(scalar_data.d_bool));
+					break;
+				}
+
+				throw std::runtime_error("cannot get raw unsigned char pointer and size of this type!");
+
+			};
+
+
+
+			template<>
 			std::vector<unsigned char> get<std::vector<unsigned char>>() const
 			{
 				if (type == n_bin || type == n_str)

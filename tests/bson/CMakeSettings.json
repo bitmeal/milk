@@ -19,6 +19,14 @@
         {
           "name": "Boost_ADDITIONAL_VERSIONS",
           "value": "1.68"
+        },
+        {
+          "name": "libbson-static-1.0_DIR",
+          "value": "C:/Program Files (x86)/mongo-c-driver/lib/cmake/libbson-static-1.0"
+        },
+        {
+          "name": "libbsoncxx-static_DIR",
+          "value": "C:/Program Files (x86)/mongo-cxx-driver/lib/cmake/libbsoncxx-static-3.4.0"
         }
       ]
     },
@@ -40,6 +48,14 @@
         {
           "name": "Boost_ADDITIONAL_VERSIONS",
           "value": "1.68"
+        },
+      {
+          "name": "libbson-static-1.0_DIR",
+          "value": "C:/Program Files (x86)/mongo-c-driver/lib/cmake/libbson-static-1.0"
+        },
+        {
+          "name": "libbsoncxx-static_DIR",
+          "value": "C:/Program Files (x86)/mongo-cxx-driver/lib/cmake/libbsoncxx-static-3.4.0"
         }
       ]
     }

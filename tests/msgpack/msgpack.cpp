@@ -14,6 +14,8 @@
 
 int main(int argc, char* argv[]) {
 
+	// development not test!
+
 	msgpack::sbuffer msgpack_buffer;
 	msgpack::packer<msgpack::sbuffer> msgpack_packer(msgpack_buffer);
 
@@ -38,8 +40,11 @@ int main(int argc, char* argv[]) {
 	msgpack_packer.pack(ext_bin);
 
 	
-	milk::bite data = milk::from_msgpack(msgpack_buffer.data(), msgpack_buffer.size());
+	milk::bite data = milk::msgpack_module::from(msgpack_buffer.data(), msgpack_buffer.size());
 
+	msgpack::sbuffer to_msgback_buffer;
+	
+	milk::msgpack_module::to(data, to_msgback_buffer);
 
 	return EXIT_SUCCESS;
 }

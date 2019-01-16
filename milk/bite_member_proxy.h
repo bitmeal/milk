@@ -18,7 +18,12 @@ namespace milk
 		};
 
 	public:
-		// overloading asignment operators to operate on original object
+		// overloading asignment operators and setter for binary extension to operate on original object
+
+		void bin_extension(const unsigned char& val)
+		{
+			parent.mutable_idx(key).bin_extension(val);
+		}
 
 		milk::bite& mutable_idx(std::string key)
 		{

@@ -75,7 +75,7 @@ namespace milk
 			bool is_binary() const { return is_bin(); }
 
 
-			std::size_t size() { return grain ? grain->size() : 0; };
+			std::size_t size() const { return grain ? grain->size() : 0; };
 			bool empty() { return (size() == 0); }
 
 			// iterators
@@ -124,6 +124,8 @@ namespace milk
 				return grain ? grain->idx_probe(key) : milk::bite();
 			};
 
+			// doubles functionality with protected mutable_idx(key) for iterators
+			// implemented for efficient construction from serialization formats - needs review
 			milk::bite& bite_ref_at(const std::string& key)
 			{
 				//makes this instance a map, not matter what! and inserts the requested key!
