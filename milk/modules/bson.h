@@ -51,7 +51,7 @@ namespace milk
 			case bsoncxx::type::k_date: // milliseconds unix time, int64
 			{
 				milk::bite bite = data.get_date().to_int64();
-				bite.bin_extension(0x11); //http://bsonspec.org/spec.html
+				bite.bin_extension(0x09); //http://bsonspec.org/spec.html
 				return bite;
 			}
 				break;
@@ -80,7 +80,7 @@ namespace milk
 			{
 				uint64_t timestamp;
 				timestamp = ((uint64_t) data.get_timestamp().timestamp) << 32;
-				timestamp |= ((uint64_t) 0 | (uint64_t) data.get_timestamp().increment);
+				timestamp |= (uint64_t) data.get_timestamp().increment;
 				milk::bite bite(timestamp);
 				bite.bin_extension(0x11); //http://bsonspec.org/spec.html
 				return bite;
@@ -174,7 +174,25 @@ namespace milk
 					switch (it.type())
 					{
 					case milk::type::s_int:
-						arr.append(it.get<int>());
+						switch (it.bin_extension())
+						{
+						case 0x09: // date
+							arr.append(bsoncxx::types::b_date(std::chrono::milliseconds{ it.get<int64_t>() }));
+							break;
+						case 0x11: // timestamp
+						{
+							// first 32 bit = unix timestamp, last 32 bit = counter ops in second, https://docs.mongodb.com/manual/reference/bson-types/#timestamps
+							uint64_t int_ts = it.get<uint64_t>();
+							bsoncxx::types::b_timestamp b_ts;
+							b_ts.timestamp = ((uint64_t)int_ts >> 32);
+							b_ts.increment = int_ts | 0x00000000ffffffff;
+							arr.append(b_ts);
+							break;
+						}
+						default:
+							arr.append(it.get<int>());
+							break;
+						}
 						break;
 					case milk::type::s_fp:
 						arr.append(it.get<double>());
@@ -186,13 +204,32 @@ namespace milk
 						arr.append(it.get<bool>());
 						break;
 					case milk::type::n_str:
-						arr.append(it.get<std::string>());
+						switch (it.bin_extension())
+						{
+						case 0x0b: // regex
+							arr.append(bsoncxx::types::b_regex{ it.get<std::string>() });
+							break;
+						case 0x0d: // JS code
+							arr.append(bsoncxx::types::b_code{ it.get<std::string>() });
+							break;
+						default:
+							arr.append(it.get<std::string>());
+							break;
+						}
 						break;
 					case milk::type::n_bin:
 						// copying binary is most inefficient way here, need access to data by pointer
 						milk::binary_proxy bin = it.get<milk::binary_proxy>();
+
+						// handle object id as special binary case
+						if (it.bin_extension() == 0x07)
+						{
+							arr.append(bsoncxx::oid(reinterpret_cast<const char*>(bin.data()), bin.size()));
+							break;
+						}
+						// else
 						bsoncxx::types::b_binary bson_bin = { bsoncxx::binary_sub_type(it.bin_extension()), bin.size(), bin.data() };
-						arr.append(it.first, bson_bin);
+						arr.append(bson_bin);
 						break;
 					}
 
@@ -234,7 +271,25 @@ namespace milk
 					switch (it.type())
 					{
 					case milk::type::s_int:
-						doc.append(kvp(it.first, it.get<int>()));
+						switch (it.bin_extension())
+						{
+						case 0x09: // date
+							doc.append(kvp(it.first, bsoncxx::types::b_date(std::chrono::milliseconds{ it.get<int64_t>() })));
+							break;
+						case 0x11: // timestamp
+						{
+							// first 32 bit = unix timestamp, last 32 bit = counter ops in second, https://docs.mongodb.com/manual/reference/bson-types/#timestamps
+							uint64_t int_ts = it.get<uint64_t>();
+							bsoncxx::types::b_timestamp b_ts;
+							b_ts.timestamp = ((uint64_t)int_ts >> 32);
+							b_ts.increment = int_ts | 0x00000000ffffffff;
+							doc.append(kvp(it.first, b_ts));
+							break;
+						}
+						default:
+							doc.append(kvp(it.first, it.get<int>()));
+							break;
+						}
 						break;
 					case milk::type::s_fp:
 						doc.append(kvp(it.first, it.get<double>()));
@@ -246,14 +301,34 @@ namespace milk
 						doc.append(kvp(it.first, it.get<bool>()));
 						break;
 					case milk::type::n_str:
-						doc.append(kvp(it.first, it.get<std::string>()));
+						switch (it.bin_extension())
+						{
+						case 0x0b: // regex
+							doc.append(kvp(it.first, bsoncxx::types::b_regex{ it.get<std::string>() }));
+							break;
+						case 0x0d: // JS code
+							doc.append(kvp(it.first, bsoncxx::types::b_code{ it.get<std::string>() }));
+							break;
+						default:
+							doc.append(kvp(it.first, it.get<std::string>()));
+							break;
+						}
 						break;
 					case milk::type::n_bin:
 						// copying binary is most inefficient way here, need access to data by pointer
 						milk::binary_proxy bin = it.get<milk::binary_proxy>();
+
+						// handle object id as special binary case
+						if (it.bin_extension() == 0x07)
+						{
+							doc.append(kvp(it.first, bsoncxx::oid(reinterpret_cast<const char*>(bin.data()), bin.size())));
+							break;
+						}
+						// else
 						bsoncxx::types::b_binary bson_bin = { bsoncxx::binary_sub_type(it.bin_extension()), bin.size(), bin.data() };
 						doc.append(kvp(it.first, bson_bin));
 						break;
+
 					}
 
 					continue;
