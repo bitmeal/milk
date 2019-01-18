@@ -54,8 +54,15 @@ namespace milk
 		{
 			if (this->grain != other.grain)
 			{
-				bite(other);
-				parent.mutable_idx(key) = *this;
+				if (grain)
+					*grain = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
+				else
+				{
+					//set(other);
+					grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
+										 //
+					parent.mutable_idx(key) = *this;
+				}
 			}
 
 			return (milk::bite)*this;
@@ -66,13 +73,36 @@ namespace milk
 		{
 			if (this->grain != other.grain)
 			{
-				//set(other);
-				grain = other.grain;
-				//
-				parent.mutable_idx(key) = *this;
+				if (grain)
+					*grain = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
+				else
+				{
+					//set(other);
+					grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
+										 //
+					parent.mutable_idx(key) = *this;
+				}
 			}
 
 			return (milk::bite)*this;
+		}
+
+		milk::bite_member_proxy& operator = (const milk::bite_member_proxy& other)
+		{
+			if (this->grain != other.grain)
+			{
+				if(grain)
+					*grain = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
+				else
+				{
+					//set(other);
+					grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
+					//
+					parent.mutable_idx(key) = *this;
+				}
+			}
+
+			return *this;
 		}
 
 	};

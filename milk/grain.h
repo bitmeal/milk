@@ -65,6 +65,29 @@ namespace milk
 				}
 			};
 
+			grain_base<B>& operator=(const grain_base<B>& source)
+			{
+				type = source.type;
+				scalar_data = source.scalar_data;
+				bin_ext = source.bin_ext;
+
+				switch (type)
+				{
+				case t_map:
+					d_map = std::make_unique<map_t>(*(source.d_map.get()));
+					break;
+				case t_list:
+					d_list = std::make_unique<list_t>(*(source.d_list.get()));
+					break;
+				case n_str:
+				case n_bin:
+					d_str_bin = std::make_unique<str_bin_t>(*(source.d_str_bin.get()));
+					break;
+				}
+
+				return *this;
+			}
+
 			/*
 			CONSTRUCTORS - SETTERS
 			 - integral types + char/uchar
@@ -515,15 +538,11 @@ namespace milk
 				}
 			}
 
-			B idx_probe(const std::string& key)
+			bool idx_probe(const std::string& key)
 			{
-				if (type != t_map) return B();
+				if (type != t_map) return false;
 
-				auto found_it = d_map->find(key);
-				if (found_it != d_map->end())
-					return found_it->second;
-				
-				return B();
+				return (d_map->find(key) != d_map->end());
 			}
 
 			B& idx(const std::string& key)

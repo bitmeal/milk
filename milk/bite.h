@@ -116,12 +116,12 @@ namespace milk
 			// at() and operator[] map key access
 			milk::bite_member_proxy at(const std::string& key)
 			{
-				return milk::bite_member_proxy(key, *this, grain ? grain->idx_probe(key).grain : std::shared_ptr<milk::grain_base<milk::bite>>(nullptr));
+				return milk::bite_member_proxy(key, *this, grain ? ( grain->idx_probe(key) ? grain->idx(key).grain : std::shared_ptr<milk::grain_base<milk::bite>>(nullptr) ) : std::shared_ptr<milk::grain_base<milk::bite>>(nullptr) );
 			};
 
 			milk::bite at(const std::string& key) const
 			{
-				return grain ? grain->idx_probe(key) : milk::bite();
+				return grain ? ( grain->idx_probe(key) ? grain->idx(key) : milk::bite() ) : milk::bite();
 			};
 
 			// doubles functionality with protected mutable_idx(key) for iterators
@@ -212,7 +212,11 @@ namespace milk
 			template<typename T>
 			milk::bite& operator = (const T& other)
 			{
-				set<T>(other);
+				if (!grain)
+					set<T>(other);
+				else
+					*grain = milk::grain(other);
+
 				return *this;
 			}
 
