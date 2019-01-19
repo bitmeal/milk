@@ -494,11 +494,20 @@ namespace milk
 		static void to(milk::bite& data, T& buffer, bool pack_top_level_list = false)
 		{
 			msgpack::packer<T> msgpack_packer(buffer);
+			
+
+			if (data.is_map())
+			{
+				to_msgpack<T>(data, msgpack_packer);
+				return;
+			}
 
 			// we need a top level bite-list to hold multiple maps, lists or scalar values, a stream can server as this container by itself and write top-level data directly to the stream
 			if (pack_top_level_list && data.is_list())
 				msgpack_packer.pack_array(data.size());
 
+
+			// handles lists and scalars
 			for (auto& it : data)
 				to_msgpack<T>(it, msgpack_packer);
 		}

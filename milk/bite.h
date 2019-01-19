@@ -38,8 +38,10 @@ namespace milk
 
 			template<typename T>
 			void set(const T val) {
-				//grain.release();
-				grain = std::make_shared<milk::grain>(val);
+				if(!grain)
+					grain = std::make_shared<milk::grain>(val);
+				else
+					*grain = milk::grain(val);
 			};
 
 			void bin_extension(const unsigned char& val)
@@ -219,7 +221,27 @@ namespace milk
 
 				return *this;
 			}
+			
+			milk::bite& operator = (const char* other)
+			{
+				if (!grain)
+					set(std::string(other));
+				else
+					*grain = milk::grain(other);
 
+				return *this;
+			}
+
+			milk::bite& operator = (std::vector<milk::bite>& other)
+			{
+				if (!grain)
+					set(other);
+				else
+					*grain = milk::grain(other);
+
+				return *this;
+			}
+			
 			template<>
 			milk::bite& operator = (const milk::bite& other)
 			{

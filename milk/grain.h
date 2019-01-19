@@ -181,7 +181,7 @@ namespace milk
 			// handling: milk::bite my_bite = "string/chararr";
 			grain_base(const char* &val) : grain_base(std::string(val)) { };
 
-			// handling: char* ch = "chararr"; mil::bite my_bite = ch;
+			// handling: char* ch = "chararr"; milk::bite my_bite = ch;
 			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
