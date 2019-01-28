@@ -18,6 +18,7 @@
 namespace milk
 {
 	// templated classes for circular dependency resolution
+	// oder matters - do not modify!
 
 	template<typename B, typename G>
 	class bite_iterator_base;

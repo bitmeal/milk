@@ -210,6 +210,45 @@ namespace milk
 				grain.reset(); //call to reset in constructor does not reset to NULL as well!
 			}
 
+			// flattens nested map structurec to a top level map
+			// concattenates keys by <delimiter>
+			// keys can be protected from flattening by a leading escape character
+			#define MILK_FLATTEN_DEFAULT_ESCAPE 0
+			milk::bite flatten(char delimiter = '.', char escape = MILK_FLATTEN_DEFAULT_ESCAPE)
+			{
+				// nothing to flatten if we are no map
+				if (!is_map())
+					return *this;
+
+				milk::bite flat;
+
+				// drop recursive lambda for calls to flatten of members instead: better interface but more copying
+				// auto traverse = [&](milk::bite& map, std::string& nesting) { };
+
+				for (auto& it : *this)
+				{
+					if (!it.is_map() || (it.first.at(0) == escape && escape != MILK_FLATTEN_DEFAULT_ESCAPE))
+						flat[it.first] = it.second; // copy non map container in flat map
+					else 
+					// is map
+					{
+						milk::bite nestedMap = it.flatten(delimiter, escape);
+						for (auto& nestedIt : nestedMap)
+						{
+							if (nestedIt.first.at(0) == escape && escape != MILK_FLATTEN_DEFAULT_ESCAPE)
+							{
+								flat[it.first][nestedIt.first] = nestedIt.second;
+							}
+							else
+							{
+								flat[it.first + delimiter + nestedIt.first] = nestedIt.second;
+							}
+						}
+					}
+				}
+
+				return flat;
+			}
 
 			template<typename T>
 			milk::bite& operator = (const T& other)
@@ -264,6 +303,7 @@ namespace milk
 			~bite() {};
 
 			protected:
+				//should be refactored out - do not try to use!
 				virtual milk::bite& mutable_idx(std::string key)
 				{
 					if (!grain)
