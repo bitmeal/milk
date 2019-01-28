@@ -5,6 +5,7 @@ namespace milk
 	class bite
 	{
 		friend class bite_member_proxy_base<milk::bite>;
+		friend class bite_iterator_value<milk::bite>;
 
 		private:
 			std::shared_ptr<milk::grain> grain;
@@ -303,6 +304,12 @@ namespace milk
 			~bite() {};
 
 			protected:
+				std::shared_ptr<milk::grain> get_grain_ptr() { return grain; };
+				bite(std::shared_ptr<milk::grain> grain_ptr)
+				{
+					grain = grain_ptr;
+				}
+
 				//should be refactored out - do not try to use!
 				virtual milk::bite& mutable_idx(std::string key)
 				{

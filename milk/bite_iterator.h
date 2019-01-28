@@ -5,8 +5,15 @@ namespace milk
 	struct bite_iterator_value : public T, public std::pair<std::string, T>
 	{
 		bite_iterator_value() {};
-		explicit bite_iterator_value(const std::string key, const milk::bite& val) : milk::bite(val), std::pair<std::string, milk::bite>(key, val) {};
-		explicit bite_iterator_value(const milk::bite& val) : bite_iterator_value("", val){};
+		explicit bite_iterator_value(std::string key, milk::bite& val) : milk::bite(val.get_grain_ptr()), std::pair<std::string, milk::bite>(key, val.get_grain_ptr()) {};
+		explicit bite_iterator_value(milk::bite& val) : bite_iterator_value("", val){};
+
+		template<typename O>
+		T& operator = (const O& other)
+		{
+
+			return T::operator=(other);
+		};
 	};
 
 	template<typename B, typename G>
