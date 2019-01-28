@@ -63,19 +63,19 @@ namespace milk
 			milk::type type() const { return grain->get_type(); }
 
 
-			bool is_map() const { return grain->is_map(); };
-			bool is_list() const { return grain->is_list(); };
-			bool is_scalar() const { return grain->is_scalar(); };
+			bool is_map() 		const { return grain ? 	grain->is_map()		: false;}
+			bool is_list() 		const { return grain ? 	grain->is_list()	: false;}
+			bool is_scalar()	const { return grain ? 	grain->is_scalar()	: false;}
 
-			bool is_fp() const { return grain->is_fp(); }
-			bool is_float() const { return is_fp(); }
-			bool is_int() const { return grain->is_int(); }
-			bool is_bool() const { return grain->is_bool(); }
-			bool is_byte() const { return grain->is_byte(); }
-			bool is_str() const { return grain->is_str(); }
-			bool is_string() const { return is_str(); }
-			bool is_bin() const { return grain->is_bin(); }
-			bool is_binary() const { return is_bin(); }
+			bool is_fp() 		const { return grain ? 	grain->is_fp()		: false;}
+			bool is_float() 	const { return 			is_fp(); 					}
+			bool is_int() 		const { return grain ? 	grain->is_int()		: false;}
+			bool is_bool() 		const { return grain ? 	grain->is_bool()	: false;}
+			bool is_byte() 		const { return grain ? 	grain->is_byte()	: false;}
+			bool is_str() 		const { return grain ? 	grain->is_str()		: false;}
+			bool is_string() 	const { return 			is_str(); 					}
+			bool is_bin() 		const { return grain ? 	grain->is_bin()		: false;}
+			bool is_binary() 	const { return 			is_bin(); 					}
 
 
 			std::size_t size() const { return grain ? grain->size() : 0; };
