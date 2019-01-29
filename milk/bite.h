@@ -285,8 +285,14 @@ namespace milk
 			template<>
 			milk::bite& operator = (const milk::bite& other)
 			{
-				if (this != &other)
-					bite(other);
+				if (this == &other)
+					return *this;
+					//bite(other);
+
+				if (!grain)
+					grain = std::make_shared<milk::grain>();
+
+				*grain = *(other.grain);
 
 				return *this;
 			}
@@ -294,9 +300,14 @@ namespace milk
 			template<>
 			milk::bite& operator = (const milk::bite_member_proxy& other)
 			{
-				if (grain != other.grain)
+				if (grain == other.grain)
+					return *this;
+
+				if (!grain)
+					grain = std::make_shared<milk::grain>();
 					//bite((milk::bite) other);
-					grain = other.grain;
+				
+				grain = other.grain;
 				
 				return *this;
 			}
