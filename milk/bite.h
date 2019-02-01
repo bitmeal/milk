@@ -80,6 +80,9 @@ namespace milk
 
 			std::size_t size() const { return grain ? grain->size() : 0; };
 			bool empty() { return (size() == 0); }
+			
+			// for binary and string data only - else will return nullptr!
+			const unsigned char* data() const { return grain ? grain->data() : nullptr; };
 
 			// iterators
 			bite_iterator begin()
@@ -221,7 +224,7 @@ namespace milk
 				if (!is_map())
 					return *this;
 
-				milk::bite flat;
+				milk::bite flat = std::map<std::string, milk::bite>{};
 
 				// drop recursive lambda for calls to flatten of members instead: better interface but more copying
 				// auto traverse = [&](milk::bite& map, std::string& nesting) { };

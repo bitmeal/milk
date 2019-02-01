@@ -172,10 +172,13 @@ namespace milk
 			grain_base(const T& val) : grain_base()
 			{
 				type = n_bin;
+				d_str_bin = std::make_unique<str_bin_t>(val.data(), val.data() + val.size());
+				/* 
 				d_str_bin = std::make_unique<str_bin_t>();
 				d_str_bin->reserve(val.size());
 				for (std::size_t idx = 0; idx < val.size(); ++idx)
 					d_str_bin->push_back(*(val.data() + idx));
+				*/
 			};
 
 			// handling: milk::bite my_bite = "string/chararr";
@@ -437,9 +440,20 @@ namespace milk
 				case t_list:
 					return d_list->size();
 					break;
+				case n_str:
+				case n_bin:
+					return d_str_bin->size();
 				default:
 					return 1;
 				}
+			}
+			
+			const unsigned char* data() const
+			{
+				if( d_str_bin && ( type == n_str || type == n_bin ))
+					return d_str_bin->data();
+				else
+					return nullptr;
 			}
 
 			milk::bite_iterator_base<B, milk::grain_base<B>> begin(B* parent)

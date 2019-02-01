@@ -111,7 +111,7 @@ namespace milk
 
 		static milk::bite as_list(const bsoncxx::array::view& data)
 		{
-			milk::bite bite;
+			milk::bite bite = std::vector<milk::bite>{};
 
 			for (auto& it : data)
 			{
@@ -136,7 +136,7 @@ namespace milk
 		// arrays are documents/maps as well (string keys starting from 0 to n)
 		static milk::bite as_map(const bsoncxx::document::view& data)
 		{
-			milk::bite bite;
+			milk::bite bite = std::map<std::string, milk::bite>{};
 			
 			for (auto& it : data)
 			{
@@ -376,7 +376,7 @@ namespace milk
 		static void to(milk::bite& data, bsoncxx::builder::basic::document& document)
 		{
 			if (!data.is_map())
-				throw std::runtime_error("structure has no top-level mal! BSON needs a top level map in the document!");
+				throw std::runtime_error("structure has no top-level map! BSON needs a top level map in the document!");
 
 			document = pack_map(data);
 		};

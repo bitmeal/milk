@@ -146,7 +146,17 @@ namespace milk
 					};
 
 				};
-
+				
+				switch (state)
+				{
+				case map:
+					depth_manager.front().first = std::map<std::string, milk::bite>{};
+					break;
+				case list:
+					 depth_manager.front().first = std::vector<milk::bite>{};
+					break;
+				}
+				
 				structure_state = state;
 
 				return true;
