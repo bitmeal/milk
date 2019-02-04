@@ -6,6 +6,9 @@ namespace milk
 	{
 		friend class bite_member_proxy_base<milk::bite>;
 		friend class bite_iterator_value<milk::bite>;
+		// TODO: befriend std::pair and/or std::pair constructor for in place instantiation of bite from grain shared pointer-> make bite construtor from shared pointer protected; used in iterator to avoid copying
+		//friend class std::pair<std::string, milk::bite>;
+		//friend auto std::pair<const std::string, const milk::bite>::pair<std::string, std::shared_ptr<milk::grain>>(std::piecewise_construct_t, std::tuple<std::string>, std::tuple < std::shared_ptr<milk::grain>>);
 
 		private:
 			std::shared_ptr<milk::grain> grain;
@@ -319,6 +322,7 @@ namespace milk
 
 			protected:
 				std::shared_ptr<milk::grain> get_grain_ptr() { return grain; };
+			public:
 				bite(std::shared_ptr<milk::grain> grain_ptr)
 				{
 					grain = grain_ptr;
