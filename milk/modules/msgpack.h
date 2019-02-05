@@ -6,13 +6,14 @@
 
 #include <msgpack.hpp>
 
+
 namespace milk
 {
 	struct msgpack_module {
 	private:
 		struct milk_msgpack_visitor : public msgpack::v2::null_visitor {
-
-			milk::bite data;
+		private:
+			milk::bite& data;
 
 			enum t_structure_state { uninit, map, list, ret_toplevel };
 			t_structure_state structure_state;
@@ -29,50 +30,10 @@ namespace milk
 
 			bool implicit_string_keys;
 
-			milk_msgpack_visitor() : data(milk::bite()), structure_state(uninit), key_cache(""), data_state(value), implicit_string_keys(true) {};
-			milk_msgpack_visitor(bool implicit_string_keys) : milk_msgpack_visitor() { this->implicit_string_keys = implicit_string_keys; };
-			/*
-					switch (structure_state)
-					{
-					case uninit:
-						break;
-					case list:
-						break;
-					case map:
-						switch (data_state)
-						{
-						case key:
-							break;
-						case value:
-							break;
-						};
-
-					};
-			*/
-			/*
-					switch (structure_state)
-					{
-					case uninit:
-						data = v;
-						depth_manager.push_front(data);
-						structure_state = list;
-						break;
-					case list:
-						depth_manager.front().get().push_back(v);
-						break;
-					case map:
-						switch (data_state)
-						{
-						case key:
-							if (!implicit_string_keys) return false; //no implicit conversion of non-string keys to string permitted!
-							else key_cache = std::to_string(v);
-							break;
-						case value:
-							depth_manager.front().get()[key_cache] = v;
-							break;
-						};
-					};
-			*/
+		public:
+			milk_msgpack_visitor() = delete;
+			milk_msgpack_visitor(milk::bite& data) : data(data), structure_state(uninit), key_cache(""), data_state(value), implicit_string_keys(true) {};
+			milk_msgpack_visitor(milk::bite& data, bool implicit_string_keys) : milk_msgpack_visitor(data) { this->implicit_string_keys = implicit_string_keys; };
 
 			struct binary_wrapper
 			{
@@ -85,6 +46,7 @@ namespace milk
 				std::size_t size() const { return _size; };
 			};
 
+		private:
 			template <typename T>
 			inline bool process_scalar(T& v)
 			{
@@ -191,6 +153,7 @@ namespace milk
 
 			}
 
+		public:
 			bool visit_nil() {
 				return false; //cannot handle null-type
 			}
@@ -315,36 +278,6 @@ namespace milk
 			}
 
 			bool start_array(uint32_t) {
-				/*
-					switch (structure_state)
-					{
-					case uninit:
-						depth_manager.push_front(
-							std::make_pair(std::ref(data), list)
-						);
-						break;
-					case list:
-						depth_manager.front().first.push_back(milk::bite());
-						depth_manager.push_front(std::make_pair(std::ref(depth_manager.front().first.back()), list));
-						break;
-					case map:
-						switch (data_state)
-						{
-						case key:
-							return false; //array/list as map key not possible!
-							break;
-						case value:
-							depth_manager.push_front(std::make_pair(std::ref(depth_manager.front().first.bite_ref_at(key_cache)), list));
-							break;
-						};
-
-					};
-
-					structure_state = list;
-
-					return true;
-					*/
-
 				if (structure_state == ret_toplevel) process_toplevel_return();
 
 				return process_structure(list);
@@ -356,36 +289,6 @@ namespace milk
 			}
 
 			bool start_map(uint32_t) {
-				/*
-				switch (structure_state)
-				{
-				case uninit:
-					depth_manager.push_front(
-						std::make_pair(std::ref(data), map)
-					);
-					break;
-				case list:
-					depth_manager.front().first.push_back(milk::bite());
-					depth_manager.push_front(std::make_pair(std::ref(depth_manager.front().first.back()), map));
-					break;
-				case map:
-					switch (data_state)
-					{
-					case key:
-						return false; //map as map key not possible!
-						break;
-					case value:
-						depth_manager.push_front(std::make_pair(std::ref(depth_manager.front().first.bite_ref_at(key_cache)), map));
-						break;
-					};
-
-				};
-
-				structure_state = map;
-
-				return true;
-				*/
-
 				if (structure_state == ret_toplevel) process_toplevel_return();
 
 				return process_structure(map);
@@ -483,21 +386,33 @@ namespace milk
 		}
 
 	public:
-		static milk::bite from(const char* data, std::size_t size, bool single_element = false)
+		static void from(const char* data, std::size_t size, milk::bite& m_bite, bool single_element = false)
 		{
-			milk::msgpack_module::milk_msgpack_visitor milk_visitor;
+			milk::msgpack_module::milk_msgpack_visitor milk_visitor(m_bite);
 			std::size_t offset = 0;
 
 			if (!msgpack::v2::parse(data, size, offset, milk_visitor))
-				return milk::bite();
+				m_bite = milk::bite();
 
 			while (offset < size && !single_element)
 			{
 				if (!msgpack::v2::parse(data, size, offset, milk_visitor))
-					return milk::bite();
+					m_bite = milk::bite();
 			}
+		}
 
-			return milk_visitor.data;
+		static std::shared_ptr<milk::bite> sp_from(const char* data, std::size_t size, bool single_element = false)
+		{
+			std::shared_ptr<milk::bite> bite_sp = std::make_shared<milk::bite>();
+			from(data, size, *bite_sp, single_element);
+			return bite_sp;
+		}
+
+		static milk::bite from(const char* data, std::size_t size, bool single_element = false)
+		{
+			milk::bite m_bite;
+			from(data, size, m_bite, single_element);
+			return m_bite;
 		}
 
 		template <typename T>
