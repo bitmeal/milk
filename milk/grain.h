@@ -245,6 +245,137 @@ namespace milk
 
 			};
 
+			template<>
+			unsigned char get<unsigned char>() const
+			{
+				if (type == s_byte)
+					return scalar_data.d_byte;
+
+				throw std::runtime_error("cannot convert to string");
+			};
+
+			template<>
+			milk::binary_proxy get<milk::binary_proxy>() const
+			{
+
+				if (type == n_bin || type == n_str)
+				{
+					return milk::binary_proxy(d_str_bin->data(), d_str_bin->size());
+				}
+
+				switch (type) {
+				case s_int:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_int), sizeof(scalar_data.d_int));
+					break;
+				case s_fp:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_fp), sizeof(scalar_data.d_fp));
+					break;
+				case s_byte:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_byte), sizeof(scalar_data.d_byte));
+					break;
+				case s_bool:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_bool), sizeof(scalar_data.d_bool));
+					break;
+				}
+
+				throw std::runtime_error("cannot get raw unsigned char pointer and size of this type!");
+
+			};
+
+
+
+			template<>
+			std::vector<unsigned char> get<std::vector<unsigned char>>() const
+			{
+				if (type == n_bin || type == n_str)
+				{
+					return *(d_str_bin.get());
+				}
+
+				std::vector<unsigned char> ch_vec;
+
+				switch (type) {
+				case s_int:
+					for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
+						ch_vec.push_back(*((char*) &(scalar_data.d_int) + i));
+					return ch_vec;
+					break;
+				case s_fp:
+					for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
+						ch_vec.push_back(*((char*) &(scalar_data.d_fp) + i));
+					return ch_vec;
+					break;
+				case s_byte:
+					ch_vec.push_back(*((char*) &(scalar_data.d_byte)));
+					return ch_vec;
+					break;
+				case s_bool:
+					ch_vec.push_back(*((char*) &(scalar_data.d_bool)));
+					return ch_vec;
+					break;
+				}
+
+				throw std::runtime_error("cannot convert to char vector");
+
+			};
+
+			template<>
+			std::string get<std::string>() const
+			{
+				switch (type) {
+				case s_int:
+					return std::to_string(scalar_data.d_int);
+					break;
+				case s_fp:
+					return std::to_string(scalar_data.d_fp);
+					break;
+				case s_byte:
+					return std::to_string(scalar_data.d_byte);
+					break;
+				case s_bool:
+					return std::to_string(scalar_data.d_bool);
+					break;
+				case n_str:
+				case n_bin:
+					return std::string(d_str_bin->begin(), d_str_bin->end());
+					break;
+				}
+
+				//convert map and list to empty string?
+				throw std::runtime_error("cannot convert to string");
+
+			};
+
+			template<>
+			bool get<bool>() const
+			{
+				switch (type) {
+				case s_bool:
+					return scalar_data.d_bool;
+					break;
+				case s_int:
+					return (scalar_data.d_int != 0);
+					break;
+				case s_fp:
+					return (scalar_data.d_fp != 0);
+					break;
+				case s_byte:
+					return (scalar_data.d_byte != 0);
+					break;
+				case n_str:
+				case n_bin:
+					return (d_str_bin->size() != 0);
+					break;
+				case t_list:
+					return (d_list->size() != 0);
+					break;
+				case t_map:
+					return (d_map->size() != 0);
+					break;
+				default:
+					return false;
+				}
+			}
 
 			unsigned char bin_extension() const
 			{
@@ -489,141 +620,5 @@ namespace milk
 
 			~grain_base() {};
 	};
-
-	template<>
-	template<>
-	inline unsigned char grain_base<milk::bite>::get<unsigned char>() const
-	{
-		if (type == s_byte)
-			return scalar_data.d_byte;
-
-		throw std::runtime_error("cannot convert to string");
-	};
-
-	template<>
-	template<>
-	inline milk::binary_proxy grain_base<milk::bite>::get<milk::binary_proxy>() const
-	{
-
-		if (type == n_bin || type == n_str)
-		{
-			return milk::binary_proxy(d_str_bin->data(), d_str_bin->size());
-		}
-
-		switch (type) {
-		case s_int:
-			return milk::binary_proxy((unsigned char*) &(scalar_data.d_int), sizeof(scalar_data.d_int));
-			break;
-		case s_fp:
-			return milk::binary_proxy((unsigned char*) &(scalar_data.d_fp), sizeof(scalar_data.d_fp));
-			break;
-		case s_byte:
-			return milk::binary_proxy((unsigned char*) &(scalar_data.d_byte), sizeof(scalar_data.d_byte));
-			break;
-		case s_bool:
-			return milk::binary_proxy((unsigned char*) &(scalar_data.d_bool), sizeof(scalar_data.d_bool));
-			break;
-		}
-
-		throw std::runtime_error("cannot get raw unsigned char pointer and size of this type!");
-
-	};
-
-	template<>
-	template<>
-	inline std::vector<unsigned char> grain_base<milk::bite>::get<std::vector<unsigned char>>() const
-	{
-		if (type == n_bin || type == n_str)
-		{
-			return *(d_str_bin.get());
-		}
-
-		std::vector<unsigned char> ch_vec;
-
-		switch (type) {
-		case s_int:
-			for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
-				ch_vec.push_back(*((char*) &(scalar_data.d_int) + i));
-			return ch_vec;
-			break;
-		case s_fp:
-			for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
-				ch_vec.push_back(*((char*) &(scalar_data.d_fp) + i));
-			return ch_vec;
-			break;
-		case s_byte:
-			ch_vec.push_back(*((char*) &(scalar_data.d_byte)));
-			return ch_vec;
-			break;
-		case s_bool:
-			ch_vec.push_back(*((char*) &(scalar_data.d_bool)));
-			return ch_vec;
-			break;
-		}
-
-		throw std::runtime_error("cannot convert to char vector");
-
-	};
-
-	template<>
-	template<>
-	inline std::string grain_base<milk::bite>::get<std::string>() const
-	{
-		switch (type) {
-		case s_int:
-			return std::to_string(scalar_data.d_int);
-			break;
-		case s_fp:
-			return std::to_string(scalar_data.d_fp);
-			break;
-		case s_byte:
-			return std::to_string(scalar_data.d_byte);
-			break;
-		case s_bool:
-			return std::to_string(scalar_data.d_bool);
-			break;
-		case n_str:
-		case n_bin:
-			return std::string(d_str_bin->begin(), d_str_bin->end());
-			break;
-		}
-
-		//convert map and list to empty string?
-		throw std::runtime_error("cannot convert to string");
-
-	};
-
-	template<>
-	template<>
-	inline bool grain_base<milk::bite>::get<bool>() const
-	{
-		switch (type) {
-		case s_bool:
-			return scalar_data.d_bool;
-			break;
-		case s_int:
-			return (scalar_data.d_int != 0);
-			break;
-		case s_fp:
-			return (scalar_data.d_fp != 0);
-			break;
-		case s_byte:
-			return (scalar_data.d_byte != 0);
-			break;
-		case n_str:
-		case n_bin:
-			return (d_str_bin->size() != 0);
-			break;
-		case t_list:
-			return (d_list->size() != 0);
-			break;
-		case t_map:
-			return (d_map->size() != 0);
-			break;
-		default:
-			return false;
-		}
-	};
-
 
 }

@@ -435,7 +435,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-/*
+
 	std::cout << "MAP ITERATOR TEST: for_each" << std::endl;
 	std::cout << "USING ITERATOR BASED STD::UTILITY" << std::endl;
 	try {
@@ -466,7 +466,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-*/
+
 	//std::cout << " TEST" << std::endl;
 	//try {
 	//
