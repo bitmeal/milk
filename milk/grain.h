@@ -188,14 +188,14 @@ namespace milk
 			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
-			//template<>
+			template<>
 			grain_base(const std::string& val) : grain_base()
 			{
 				type = n_str;
 				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
 			};
 
-			//template<>
+			template<>
 			grain_base(const bool& val) : grain_base()
 			{
 				type = s_bool;
@@ -245,9 +245,8 @@ namespace milk
 
 			};
 
-			template<typename T>
-			typename std::enable_if_t<std::is_same<unsigned char, T>::value>
-			get() const
+			template<>
+			unsigned char get<unsigned char>() const
 			{
 				if (type == s_byte)
 					return scalar_data.d_byte;
@@ -255,9 +254,8 @@ namespace milk
 				throw std::runtime_error("cannot convert to string");
 			};
 
-			template<typename T>
-			typename std::enable_if_t<std::is_same<milk::binary_proxy, T>::value>
-			get() const
+			template<>
+			milk::binary_proxy get<milk::binary_proxy>() const
 			{
 
 				if (type == n_bin || type == n_str)
@@ -286,9 +284,8 @@ namespace milk
 
 
 
-			template<typename T>
-			typename std::enable_if_t<std::is_same<std::vector<unsigned char>, T>::value>
-			get() const
+			template<>
+			std::vector<unsigned char> get<std::vector<unsigned char>>() const
 			{
 				if (type == n_bin || type == n_str)
 				{
@@ -322,9 +319,8 @@ namespace milk
 
 			};
 
-			template<typename T>
-			typename std::enable_if_t<std::is_same<std::string, T>::value>
-			get() const
+			template<>
+			std::string get<std::string>() const
 			{
 				switch (type) {
 				case s_int:
@@ -350,9 +346,8 @@ namespace milk
 
 			};
 
-			template<typename T>
-			typename std::enable_if_t<std::is_same<bool, T>::value>
-			get() const
+			template<>
+			bool get<bool>() const
 			{
 				switch (type) {
 				case s_bool:

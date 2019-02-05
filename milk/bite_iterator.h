@@ -11,15 +11,14 @@ namespace milk
 			{};
 		explicit bite_iterator_value(B& val) : bite_iterator_value("", val){};
 
-		template<typename O, std::enable_if_t<!std::is_same<B, O>::value>>
+		template<typename O>
 		B& operator = (const O& other)
 		{
 			return B::operator=(other);
 		};
 
-		template<typename T>
-		typename std::enable_if_t<std::is_same<B, T>::value>
-		& operator = (const B& other)
+		template<>
+		B& operator = (const B& other)
 		{
 			//return T::operator=(other);
 			*(this->grain) = *(other.grain);
@@ -36,6 +35,11 @@ namespace milk
 		friend G;
 		friend B;
 
+		//iterator_category, value_type, difference_type, pointer, and reference
+		//typedef typename std::iterator<std::input_iterator_tag, milk::bite_iterator_value<B>>::value_type value_type;
+		typedef typename milk::bite_iterator_value<B> value_type;
+		//typedef std::input_iterator_tag iterator_category;
+
 	private:
 		enum iterator_type_t {
 			map_i,
@@ -47,8 +51,7 @@ namespace milk
 		// instantiated only on member access operator;
 		// else, on use for dereferencing operator, this would not qualify const!
 		// can not be instantiated on iterator instantiation as end() is not dereferenceable!
-		typedef typename std::iterator<std::input_iterator_tag, milk::bite_iterator_value<B>>::value_type value_type;
-		value_type it_interface;
+		std::unique_ptr<value_type> it_interface;
 
 		typename G::map_t::iterator map_iterator;
 		typename G::list_t::iterator list_iterator;
@@ -56,12 +59,16 @@ namespace milk
 		B* bite_ptr;
 		bool end;
 
+		// keep track of modifications to the iterator (not "referenced" data!)
+		// avoid excessive iterator_value instantiations: ONLY ++ operator modifies iterator by now;
+		bool modified;
+
 		// map iterator
-		bite_iterator_base(typename G::map_t::iterator&& it) : iterator_type(map_i), map_iterator(it) { };
+		bite_iterator_base(typename G::map_t::iterator&& it) : iterator_type(map_i), map_iterator(it), modified(true) { };
 		// list iterator
-		bite_iterator_base(typename G::list_t::iterator&& it) : iterator_type(list_i), list_iterator(it) { };
+		bite_iterator_base(typename G::list_t::iterator&& it) : iterator_type(list_i), list_iterator(it), modified(true) { };
 		// scalar (non container bite); from bite
-		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) { };
+		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end), modified(true) { };
 
 		/*
 		// scalar (non container grain); from grain
@@ -69,6 +76,24 @@ namespace milk
 		*/
 
 	public:
+
+		bite_iterator_base& operator = (const bite_iterator_base& other)
+		{
+			this->iterator_type = other.iterator_type;
+			this->map_iterator  = other.map_iterator;
+			this->list_iterator = other.list_iterator;
+			this->bite_ptr	    = other.bite_ptr;
+			this->end		    = other.end;
+			this->modified	    = true;
+
+			return *this;
+		};
+
+		bite_iterator_base(const bite_iterator_base& other)
+		{
+			*this = other;
+		};
+
 		bool operator == (const milk::bite_iterator_base<B,G>& rhs) const
 		{
 			switch (iterator_type)
@@ -120,40 +145,46 @@ namespace milk
 			return *this;
 		};
 
-		value_type operator*() const
+		value_type& operator*()
 		{
-			switch (iterator_type)
-			{
-			case map_i:
-				return value_type(map_iterator->first, map_iterator->second);
-				break;
-			case list_i:
-				return value_type(*list_iterator);
-				break;
-			case scalar_i:
-				return value_type(*bite_ptr);
-				break;
+			if (modified) {
+				switch (iterator_type)
+				{
+				case map_i:
+					it_interface = std::make_unique<value_type>(map_iterator->first, map_iterator->second);
+					break;
+				case list_i:
+					it_interface = std::make_unique<value_type>(*list_iterator);
+					break;
+				case scalar_i:
+					it_interface = std::make_unique<value_type>(*bite_ptr);
+					break;
+				default:
+					it_interface = std::make_unique<value_type>();
+				}
 			}
-			return value_type();
+			return *it_interface;
 		};
 
 		value_type* operator->()
 		{
-			switch (iterator_type)
-			{
-			case map_i:
-				this->it_interface = value_type(map_iterator->first, map_iterator->second);
-				break;
-			case list_i:
-				this->it_interface = value_type(*list_iterator);
-				break;
-			case scalar_i:
-				this->it_interface = value_type(*bite_ptr);
-				break;
+			if (modified) {
+				switch (iterator_type)
+				{
+				case map_i:
+					it_interface = std::make_unique<value_type>(map_iterator->first, map_iterator->second);
+					break;
+				case list_i:
+					it_interface = std::make_unique<value_type>(*list_iterator);
+					break;
+				case scalar_i:
+					it_interface = std::make_unique<value_type>(*bite_ptr);
+					break;
+				default:
+					it_interface = std::make_unique<value_type>();
+				}
 			}
-			//it_interface = value_type();
-
-			return &it_interface;
+			return it_interface.get();
 		};
 
 	};
