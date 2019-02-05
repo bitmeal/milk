@@ -11,27 +11,31 @@ namespace milk
 			{};
 		explicit bite_iterator_value(B& val) : bite_iterator_value("", val){};
 
-		template<typename O>
+		template<typename O, std::enable_if_t<!std::is_same<B, O>::value>>
 		B& operator = (const O& other)
 		{
 			return B::operator=(other);
 		};
-		template<>
-		B& operator = (const B& other)
+
+		template<typename T>
+		typename std::enable_if_t<std::is_same<B, T>::value>
+		& operator = (const B& other)
 		{
 			//return T::operator=(other);
-			*grain = *(other.grain);
+			*(this->grain) = *(other.grain);
 			return *this;
 		};
 	};
+
+
 
 	template<typename B, typename G>
 	class bite_iterator_base : public std::iterator<std::input_iterator_tag, milk::bite_iterator_value<B>>
 	{
 		// allow construction only from bite and grain classes
-		friend class milk::grain;
-		friend class milk::bite;
-	
+		friend G;
+		friend B;
+
 	private:
 		enum iterator_type_t {
 			map_i,
@@ -43,6 +47,7 @@ namespace milk
 		// instantiated only on member access operator;
 		// else, on use for dereferencing operator, this would not qualify const!
 		// can not be instantiated on iterator instantiation as end() is not dereferenceable!
+		typedef typename std::iterator<std::input_iterator_tag, milk::bite_iterator_value<B>>::value_type value_type;
 		value_type it_interface;
 
 		typename G::map_t::iterator map_iterator;
@@ -52,9 +57,9 @@ namespace milk
 		bool end;
 
 		// map iterator
-		bite_iterator_base(typename G::map_t::iterator& it) : iterator_type(map_i), map_iterator(it) { };
+		bite_iterator_base(typename G::map_t::iterator&& it) : iterator_type(map_i), map_iterator(it) { };
 		// list iterator
-		bite_iterator_base(typename G::list_t::iterator& it) : iterator_type(list_i), list_iterator(it) { };
+		bite_iterator_base(typename G::list_t::iterator&& it) : iterator_type(list_i), list_iterator(it) { };
 		// scalar (non container bite); from bite
 		bite_iterator_base(B* data, bool end = false) : iterator_type(scalar_i), bite_ptr(data), end(end) { };
 
@@ -64,7 +69,7 @@ namespace milk
 		*/
 
 	public:
-		bool operator == (const milk::bite_iterator& rhs) const
+		bool operator == (const milk::bite_iterator_base<B,G>& rhs) const
 		{
 			switch (iterator_type)
 			{
@@ -80,7 +85,7 @@ namespace milk
 			}
 		};
 
-		bool operator != (const milk::bite_iterator& rhs) const
+		bool operator != (const milk::bite_iterator_base<B,G>& rhs) const
 		{
 			switch (iterator_type)
 			{
@@ -131,19 +136,19 @@ namespace milk
 			}
 			return value_type();
 		};
-		
+
 		value_type* operator->()
 		{
 			switch (iterator_type)
 			{
 			case map_i:
-				it_interface = value_type(map_iterator->first, map_iterator->second);
+				this->it_interface = value_type(map_iterator->first, map_iterator->second);
 				break;
 			case list_i:
-				it_interface = value_type(*list_iterator);
+				this->it_interface = value_type(*list_iterator);
 				break;
 			case scalar_i:
-				it_interface = value_type(*bite_ptr);
+				this->it_interface = value_type(*bite_ptr);
 				break;
 			}
 			//it_interface = value_type();

@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.1)
-set (CMAKE_CXX_STANDARD 11)
+cmake_minimum_required(VERSION 3.11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # name project and provide version number
 set(TEST_NAME milk)
@@ -32,4 +33,3 @@ target_link_libraries(${TEST_NAME})
 enable_testing()
 add_test(${TEST_NAME}_test ${TEST_NAME})
 ######################
-

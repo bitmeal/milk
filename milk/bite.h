@@ -38,7 +38,7 @@ namespace milk
 			bite(T& val)
 			{
 				set(val);
-			};		
+			};
 
 			template<typename T>
 			void set(const T val) {
@@ -52,7 +52,7 @@ namespace milk
 			{
 				grain->bin_extension(val);
 			}
-			
+
 			template<typename T>
 			T get() const {
 				return grain ? grain->get<T>() : T();
@@ -83,7 +83,7 @@ namespace milk
 
 			std::size_t size() const { return grain ? grain->size() : 0; };
 			bool empty() { return (size() == 0); }
-			
+
 			// for binary and string data only - else will return nullptr!
 			const unsigned char* data() const { return grain ? grain->data() : nullptr; };
 
@@ -153,7 +153,7 @@ namespace milk
 			void push_back(T val)
 			{
 				std::vector<milk::bite> bite_vec;
-				
+
 				// instantiate new
 				if (!grain)
 				{
@@ -170,7 +170,7 @@ namespace milk
 					set(bite_vec);
 					return;
 				}
-					
+
 				// leave handling to grain
 				grain->push_back<T>(val);
 			};
@@ -227,20 +227,20 @@ namespace milk
 				if (!is_map())
 					return *this;
 
-				milk::bite flat = std::map<std::string, milk::bite>{};
+				milk::bite flat(std::map<std::string, milk::bite>);
 
 				// drop recursive lambda for calls to flatten of members instead: better interface but more copying
 				// auto traverse = [&](milk::bite& map, std::string& nesting) { };
 
-				for (auto& it : *this)
+				for (auto&& it : *this)
 				{
 					if (!it.is_map() || (it.first.at(0) == escape && escape != MILK_FLATTEN_DEFAULT_ESCAPE))
 						flat[it.first] = it.second; // copy non map container in flat map
-					else 
+					else
 					// is map
 					{
 						milk::bite nestedMap = it.flatten(delimiter, escape);
-						for (auto& nestedIt : nestedMap)
+						for (auto&& nestedIt : nestedMap)
 						{
 							if (nestedIt.first.at(0) == escape && escape != MILK_FLATTEN_DEFAULT_ESCAPE)
 							{
@@ -267,7 +267,7 @@ namespace milk
 
 				return *this;
 			}
-			
+
 			milk::bite& operator = (const char* other)
 			{
 				if (!grain)
@@ -287,8 +287,8 @@ namespace milk
 
 				return *this;
 			}
-			
-			template<>
+
+			//template<>
 			milk::bite& operator = (const milk::bite& other)
 			{
 				if (this == &other)
@@ -303,7 +303,7 @@ namespace milk
 				return *this;
 			}
 
-			template<>
+			//template<>
 			milk::bite& operator = (const milk::bite_member_proxy& other)
 			{
 				if (grain == other.grain)
@@ -312,9 +312,9 @@ namespace milk
 				if (!grain)
 					grain = std::make_shared<milk::grain>();
 					//bite((milk::bite) other);
-				
+
 				grain = other.grain;
-				
+
 				return *this;
 			}
 
@@ -342,4 +342,3 @@ namespace milk
 		};
 
 }
-

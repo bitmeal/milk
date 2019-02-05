@@ -24,20 +24,20 @@ namespace milk
 		private:
 			union t_scalar_data {
 				int64_t			d_int;
-				double_t		d_fp;
+				double		d_fp;
 				unsigned char	d_byte;
 				bool			d_bool;
 			};
 			t_scalar_data scalar_data;
 			grain_base::t_type type;
-			
+
 			unsigned char bin_ext;
 
 			int l_str_bin;
 			std::unique_ptr<str_bin_t>	d_str_bin;
 			std::unique_ptr<map_t>		d_map;
 			std::unique_ptr<list_t>		d_list;
-			
+
 
 		public:
 			// DEFAULT
@@ -111,7 +111,7 @@ namespace milk
 					scalar_data.d_byte = val;
 					return;
 				}
-				
+
 				type = s_int;
 				scalar_data.d_int = val;
 				return;
@@ -125,7 +125,7 @@ namespace milk
 					scalar_data.d_fp = val;
 					return;
 			};
-			
+
 			// map types
 			template<typename T, std::enable_if_t<
 				sizeof(typename T::key_type) != 0
@@ -173,7 +173,7 @@ namespace milk
 			{
 				type = n_bin;
 				d_str_bin = std::make_unique<str_bin_t>(val.data(), val.data() + val.size());
-				/* 
+				/*
 				d_str_bin = std::make_unique<str_bin_t>();
 				d_str_bin->reserve(val.size());
 				for (std::size_t idx = 0; idx < val.size(); ++idx)
@@ -188,14 +188,14 @@ namespace milk
 			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
-			template<>
+			//template<>
 			grain_base(const std::string& val) : grain_base()
 			{
 				type = n_str;
 				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
 			};
 
-			template<>
+			//template<>
 			grain_base(const bool& val) : grain_base()
 			{
 				type = s_bool;
@@ -244,18 +244,20 @@ namespace milk
 				throw std::runtime_error("cannot convert to arithmetic");
 
 			};
-			
-			template<>
-			unsigned char get<unsigned char>() const
+
+			template<typename T>
+			typename std::enable_if_t<std::is_same<unsigned char, T>::value>
+			get() const
 			{
 				if (type == s_byte)
 					return scalar_data.d_byte;
 
 				throw std::runtime_error("cannot convert to string");
 			};
-			
-			template<>
-			milk::binary_proxy get<milk::binary_proxy>() const
+
+			template<typename T>
+			typename std::enable_if_t<std::is_same<milk::binary_proxy, T>::value>
+			get() const
 			{
 
 				if (type == n_bin || type == n_str)
@@ -284,8 +286,9 @@ namespace milk
 
 
 
-			template<>
-			std::vector<unsigned char> get<std::vector<unsigned char>>() const
+			template<typename T>
+			typename std::enable_if_t<std::is_same<std::vector<unsigned char>, T>::value>
+			get() const
 			{
 				if (type == n_bin || type == n_str)
 				{
@@ -319,8 +322,9 @@ namespace milk
 
 			};
 
-			template<>
-			std::string get<std::string>() const
+			template<typename T>
+			typename std::enable_if_t<std::is_same<std::string, T>::value>
+			get() const
 			{
 				switch (type) {
 				case s_int:
@@ -346,8 +350,9 @@ namespace milk
 
 			};
 
-			template<>
-			bool get<bool>() const
+			template<typename T>
+			typename std::enable_if_t<std::is_same<bool, T>::value>
+			get() const
 			{
 				switch (type) {
 				case s_bool:
@@ -447,7 +452,7 @@ namespace milk
 					return 1;
 				}
 			}
-			
+
 			const unsigned char* data() const
 			{
 				if( d_str_bin && ( type == n_str || type == n_bin ))
@@ -461,13 +466,13 @@ namespace milk
 				switch (type)
 				{
 				case t_map:
-					return milk::bite_iterator(d_map->begin());
+					return milk::bite_iterator_base<B, milk::grain_base<B>>(d_map->begin());
 					break;
 				case t_list:
-					return milk::bite_iterator(d_list->begin());
+					return milk::bite_iterator_base<B, milk::grain_base<B>>(d_list->begin());
 					break;
 				default:
-					return milk::bite_iterator(parent);
+					return milk::bite_iterator_base<B, milk::grain_base<B>>(parent);
 				}
 			}
 
@@ -497,7 +502,7 @@ namespace milk
 			// throws out of range exception or runtime error when called on non container grain
 			B& idx(const std::size_t idx)
 			{
-				map_t::iterator map_idx_it;
+				typename map_t::iterator map_idx_it;
 				switch (type)
 				{
 				case t_map:
@@ -516,8 +521,8 @@ namespace milk
 			B& back()
 			{
 				// if is scalar, back is handled in bite as interface to grain
-				// if grain contains a map, back will be the last iterable element in the map! 
-				map_t::iterator map_idx_it;
+				// if grain contains a map, back will be the last iterable element in the map!
+				typename map_t::iterator map_idx_it;
 				switch (type)
 				{
 				case t_map:
@@ -537,7 +542,7 @@ namespace milk
 			{
 				// if is scalar, back is handled in bite as interface to grain
 				// if grain contains a map, front will be the forst iterable element in the map!
-				map_t::iterator map_idx_it;
+				typename map_t::iterator map_idx_it;
 				switch (type)
 				{
 				case t_map:
@@ -598,18 +603,18 @@ namespace milk
 			}
 
 			milk::bite_iterator_base<B, milk::grain_base<B>> erase(milk::bite_iterator_base<B, milk::grain_base<B>> first, milk::bite_iterator_base<B, milk::grain_base<B>> last, B* parent)
-			{				
+			{
 				// erase
 				switch (type)
 				{
 				case t_map:
-					if (first.iterator_type == bite_iterator::iterator_type_t::map_i && last.iterator_type == bite_iterator::iterator_type_t::map_i)
+					if (first.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::map_i && last.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::map_i)
 						return milk::bite_iterator(d_map->erase(first.map_iterator, last.map_iterator));
 					else
 						throw std::runtime_error("iterators for erase operation of wrong type!");
 					break;
 				case t_list:
-					if (first.iterator_type == bite_iterator::iterator_type_t::list_i && last.iterator_type == bite_iterator::iterator_type_t::list_i)
+					if (first.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::list_i && last.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::list_i)
 						return milk::bite_iterator(d_list->erase(first.list_iterator, last.list_iterator));
 					else
 						throw std::runtime_error("iterators for erase operation of wrong type!");
@@ -622,4 +627,3 @@ namespace milk
 	};
 
 }
-

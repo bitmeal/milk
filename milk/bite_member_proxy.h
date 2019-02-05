@@ -5,7 +5,7 @@ namespace milk
 	template<typename B>
 	class bite_member_proxy_base : public B
 	{
-		friend typename B;
+		friend B;
 
 	private:
 		milk::bite& parent;
@@ -14,7 +14,7 @@ namespace milk
 		bite_member_proxy_base(std::string key, milk::bite& parent, const std::shared_ptr<milk::grain_base<B>> data) : key(key), parent(parent), bite() // <-- grain(nullptr)
 		{
 			if (data)
-				grain = data;
+				this->grain = data;
 		};
 
 	public:
@@ -27,48 +27,50 @@ namespace milk
 
 		milk::bite& mutable_idx(std::string key)
 		{
-			if (!grain)
-				set(std::map<std::string, milk::bite>());
+			if (!this->grain)
+				set(std::map<std::string, B>());
 			// split calls as is_map() would dereference a nullpointer
 			if (!is_map())
-				set(std::map<std::string, milk::bite>());
+				set(std::map<std::string, B>());
 
 
 
 			// we are a temporary container created by a request to return a map element, instantiate us in our holding parent element
 			parent.mutable_idx(this->key) = *this;
 
-			return grain->idx(key);
+			return this->grain->idx(key);
 		}
 
 		template<typename T>
 		milk::bite& operator = (const T& other)
 		{
-			set<T>(other);
+			//set<T>(other);
+			set(other);
 			parent.mutable_idx(key) = *this;
-			return (milk::bite)*this;
+			return (milk::bite&) *this;
 		}
 
-		template<>
-		milk::bite& operator = (const milk::bite& other)
+		//template<>
+		B& operator = (const B& other)
 		{
 			if (this->grain != other.grain)
 			{
-				if (grain)
-					*grain = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
+				if (this->grain)
+					*(this->grain) = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
 				else
 				{
 					//set(other);
-					grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
+					this->grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
 										 //
 					parent.mutable_idx(key) = *this;
 				}
 			}
 
-			return (milk::bite)*this;
+			return (B)*this;
 		}
 
-		template<>
+		//template<>
+		/*
 		milk::bite& operator = (const milk::bite_member_proxy& other)
 		{
 			if (this->grain != other.grain)
@@ -86,17 +88,18 @@ namespace milk
 
 			return (milk::bite)*this;
 		}
+		*/
 
-		milk::bite_member_proxy& operator = (const milk::bite_member_proxy& other)
+		bite_member_proxy_base<B>& operator = (const bite_member_proxy_base<B>& other)
 		{
 			if (this->grain != other.grain)
 			{
-				if(grain)
-					*grain = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
+				if(this->grain)
+					*(this->grain) = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
 				else
 				{
 					//set(other);
-					grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
+					this->grain = other.grain; // should already set correct data if grain != 0 !? (grain is shared pointer)
 					//
 					parent.mutable_idx(key) = *this;
 				}

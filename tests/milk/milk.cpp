@@ -138,8 +138,8 @@ int main(int argc, char* argv[]) {
 		std::vector<unsigned char> compare_char_vec(compare_str.begin(), compare_str.end());
 		// char array gets \0 terminated, size = 7; binary data size = 6!
 		struct generic_binary_t {
-			unsigned char d[7] = "binary";
-			const unsigned char* data() const { return d; };
+			char d[7] = "binary";
+			const unsigned char* data() const { return (unsigned char*)d; };
 			std::size_t size() const { return 6; };
 		} generic_binary;
 		data = generic_binary;
@@ -169,7 +169,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "DATA-STRUCTURES TESTS" << std::endl;
 
 	std::vector<int> int_vec{ 1, 2, 3, 4, 5 };
-	
+
 	std::cout << "VECTOR ASSIGN TEST" << std::endl;
 	try {
 		data = int_vec;
@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-	
+
 	std::cout << "VECTOR PUSH_BACK TEST (INT)" << std::endl;
 	try {
 		data = int_vec;
@@ -402,7 +402,7 @@ int main(int argc, char* argv[]) {
 		data["bar"] = 0.6;
 		data["parent"]["child"] = 9999;
 		int count = 0;
-		for (auto& it : data) {
+		for (auto&& it : data) {
 			++count;
 			if (count < 3) {
 				// projected value
