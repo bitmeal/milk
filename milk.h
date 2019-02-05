@@ -23,13 +23,13 @@ namespace milk
 
 	template<typename B, typename G>
 	class bite_iterator_base;
-	template<typename B, typename G>
-	enum bite_iterator_base<B,G>::iterator_type_t;
+	//template<typename B, typename G>
+	//enum bite_iterator_base<B,G>::iterator_type_t;
 
 	template<typename B>
 	class grain_base;
-	template<typename B>
-	enum grain_base<B>::t_type;
+	//template<typename B>
+	//enum grain_base<B>::t_type;
 
 	template<typename B>
 	class bite_member_proxy_base;

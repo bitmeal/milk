@@ -146,7 +146,7 @@ namespace milk
 
 			milk::bite_member_proxy operator [](const std::string& key) { return at(key); };
 
-			milk::bite operator [] (const std::string& key) const { return at(key); };
+			milk::bite operator [](const std::string& key) const { return at(key); };
 
 
 			template<typename T>
@@ -227,7 +227,7 @@ namespace milk
 				if (!is_map())
 					return *this;
 
-				milk::bite flat(std::map<std::string, milk::bite>);
+				milk::bite flat = std::map<std::string, milk::bite>();
 
 				// drop recursive lambda for calls to flatten of members instead: better interface but more copying
 				// auto traverse = [&](milk::bite& map, std::string& nesting) { };
