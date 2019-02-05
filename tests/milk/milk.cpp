@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <utility>
+#include <functional>
 
 #include <iostream>
 
@@ -32,7 +34,6 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-
 
 
 
@@ -90,7 +91,7 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "STRING FROM char* TEST 1" << std::endl;
+	std::cout << "STRING FROM char* TEST #1" << std::endl;
 	try {
 		char* str = "foo bar";
 		data = str;
@@ -100,7 +101,7 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "STRING FROM char* TEST 2" << std::endl;
+	std::cout << "STRING FROM char* TEST #2" << std::endl;
 	try {
 		data = "foo bar";
 		assert(data.get<std::string>() == "foo bar");
@@ -116,6 +117,16 @@ int main(int argc, char* argv[]) {
 		data = false;
 		assert(!data.get<bool>());
 		assert(data.is_scalar());
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "SIZE TEST #1" << std::endl;
+	try {
+		data = true;
+		std::cout << "STILL == 1 AFTER MULTIPLE REASSIGMENTS" << std::endl;
+		std::cout << "SIZE IS SIZE OF THE STRUCTURE OR BINARY/STRING DATA; SCALAR.size() == 1" << std::endl;
+		assert(data.size() == 1);
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
@@ -138,8 +149,8 @@ int main(int argc, char* argv[]) {
 		std::vector<unsigned char> compare_char_vec(compare_str.begin(), compare_str.end());
 		// char array gets \0 terminated, size = 7; binary data size = 6!
 		struct generic_binary_t {
-			unsigned char d[7] = "binary";
-			const unsigned char* data() const { return d; };
+			char d[7] = "binary";
+			const unsigned char* data() const { return (unsigned char*)d; };
 			std::size_t size() const { return 6; };
 		} generic_binary;
 		data = generic_binary;
@@ -149,11 +160,18 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "SIZE TEST" << std::endl;
+	std::cout << "SIZE TEST #2" << std::endl;
 	try {
-		std::cout << "STILL == 1 AFTER MULTIPLE REASSIGMENTS" << std::endl;
-		std::cout << "SIZE IS SIZE OF THE STRUCTURE; ONLY MAP AND LIST CAN BE < 1" << std::endl;
-		assert(data.size() == 1);
+		std::cout << "SIZE IS SIZE OF BINARY DATA" << std::endl;
+
+		struct generic_binary_t {
+			char d[7] = "binary";
+			const unsigned char* data() const { return (unsigned char*)d; };
+			std::size_t size() const { return 6; };
+		} generic_binary;
+		data = generic_binary;
+
+		assert(data.size() == 6);
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
@@ -169,7 +187,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "DATA-STRUCTURES TESTS" << std::endl;
 
 	std::vector<int> int_vec{ 1, 2, 3, 4, 5 };
-	
+
 	std::cout << "VECTOR ASSIGN TEST" << std::endl;
 	try {
 		data = int_vec;
@@ -215,7 +233,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-	
+
 	std::cout << "VECTOR PUSH_BACK TEST (INT)" << std::endl;
 	try {
 		data = int_vec;
@@ -235,26 +253,11 @@ int main(int argc, char* argv[]) {
 	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
 
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
-
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	std::map<std::string, int> int_map{
 		{ "foo", 1111 },
-		{ "bar", 9999 },
-		{ "key", 1}
+	{ "bar", 9999 },
+	{ "key", 1 }
 	};
 
 	std::cout << "MAP ASSIGN TEST" << std::endl;
@@ -283,7 +286,6 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-
 
 	std::cout << "MAP CLEAR TEST" << std::endl;
 	try {
@@ -315,14 +317,14 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	std::cout << "MAP FIND TEST" << std::endl;
-	try {
-		data = int_map;
-		auto found_it = data.find("foo");
-		assert(found_it->get<int>() == 1111);
-	}
-	catch (...) { assert(false); }
-	std::cout << "TEST OK!" << std::endl << std::endl;
+	//std::cout << "MAP FIND TEST" << std::endl;
+	//try {
+	//	data = int_map;
+	//	auto found_it = data.find("foo");
+	//	assert(found_it->get<int>() == 1111);
+	//}
+	//catch (...) { assert(false); }
+	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	std::cout << "MAP ERASE BY ITERATOR TEST" << std::endl;
 	try {
@@ -365,21 +367,6 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
-
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
 	//try {
@@ -402,7 +389,7 @@ int main(int argc, char* argv[]) {
 		data["bar"] = 0.6;
 		data["parent"]["child"] = 9999;
 		int count = 0;
-		for (auto& it : data) {
+		for (auto&& it : data) {
 			++count;
 			if (count < 3) {
 				// projected value
@@ -421,13 +408,64 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
+	std::cout << "MAP ITERATOR TEST" << std::endl;
+	std::cout << "MODIFY ITERATED STRUCTURE" << std::endl;
+	try {
+		data.clear();
+		data["foo"] = 1;
+		data["bar"] = 0.6;
+		data["parent"]["child"] = 9999;
+		data["parent"]["sibling"] = "foo";
+
+		for (auto&& it : data) {
+			if (it.is_scalar())
+				it = "bar";
+		}
+
+		for (auto&& it : data["parent"]) {
+			if (it.is_scalar())
+				it = "bar";
+		}
+
+		std::string str_comp = "bar";
+		assert(data["foo"].get<std::string>() == str_comp);
+		assert(data["bar"].get<std::string>() == str_comp);
+		assert(data["parent"]["child"].get<std::string>() == str_comp);
+		assert(data["parent"]["sibling"].get<std::string>() == str_comp);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP ITERATOR TEST: for_each" << std::endl;
+	std::cout << "USING ITERATOR BASED STD::UTILITY" << std::endl;
+	try {
+		data.clear();
+		data["foo"] = 1;
+		data["bar"] = 0.6;
+		data["parent"]["child"] = 9999;
+		data["parent"]["sibling"]["grandkid"] = "foobar";
+		data["parent"]["sibling"]["sibling"] = 1234;
+
+		std::function<void(milk::bite&)> recfun = [&recfun](milk::bite& data) {
+			if (data.is_map() || data.is_list())
+			{
+				std::for_each(data.begin(), data.end(), recfun);
+				return;
+			}
+
+			data = "bar";
+		};
+		std::for_each(data.begin(), data.end(), recfun);
+
+		std::string str_comp = "bar";
+		assert(data["foo"].get<std::string>() == str_comp);
+		assert(data["bar"].get<std::string>() == str_comp);
+		assert(data["parent"]["child"].get<std::string>() == str_comp);
+		assert(data["parent"]["sibling"]["grandkid"].get<std::string>() == str_comp);
+		assert(data["parent"]["sibling"]["sibling"].get<std::string>() == str_comp);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
 
 	//std::cout << " TEST" << std::endl;
 	//try {
@@ -436,15 +474,6 @@ int main(int argc, char* argv[]) {
 	//}
 	//catch (...) { assert(false); }
 	//std::cout << "TEST OK!" << std::endl << std::endl;
-
-	//std::cout << " TEST" << std::endl;
-	//try {
-	//
-	//assert();
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
-
 
 
 	return EXIT_SUCCESS;
