@@ -46,8 +46,8 @@ namespace milk
 
 // oder matters - do not modify!
 #include "milk/binary_proxy.h"
+#include "milk/bite_member_proxy.h"
 #include "milk/grain.h"
 namespace milk { typedef grain::t_type type; }
 #include "milk/bite_iterator.h"
-#include "milk/bite_member_proxy.h"
 #include "milk/bite.h"

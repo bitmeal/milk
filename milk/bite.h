@@ -288,36 +288,6 @@ namespace milk
 				return *this;
 			}
 
-			template<>
-			milk::bite& operator = (const milk::bite& other)
-			{
-				if (this == &other)
-					return *this;
-					//bite(other);
-
-				if (!grain)
-					grain = std::make_shared<milk::grain>();
-
-				*grain = *(other.grain);
-
-				return *this;
-			}
-
-			template<>
-			milk::bite& operator = (const milk::bite_member_proxy& other)
-			{
-				if (grain == other.grain)
-					return *this;
-
-				if (!grain)
-					grain = std::make_shared<milk::grain>();
-					//bite((milk::bite) other);
-
-				grain = other.grain;
-
-				return *this;
-			}
-
 			~bite() {};
 
 			protected:
@@ -340,5 +310,40 @@ namespace milk
 					return grain->idx(key);
 				}
 		};
+
+
+
+
+		// "outlining" template specializations
+		template<>
+		inline milk::bite& bite::operator = <milk::bite>(const milk::bite& other)
+		{
+			if (this == &other)
+				return *this;
+			//bite(other);
+
+			if (!grain)
+				grain = std::make_shared<milk::grain>();
+
+			*grain = *(other.grain);
+
+			return *this;
+		}
+
+		template<>
+		inline milk::bite& bite::operator = <milk::bite_member_proxy>(const milk::bite_member_proxy& other)
+		{
+			if (grain == other.grain)
+				return *this;
+
+			if (!grain)
+				grain = std::make_shared<milk::grain>();
+			//bite((milk::bite) other);
+
+			grain = other.grain;
+
+			return *this;
+		}
+
 
 }
