@@ -317,14 +317,14 @@ int main(int argc, char* argv[]) {
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
-	//std::cout << "MAP FIND TEST" << std::endl;
-	//try {
-	//	data = int_map;
-	//	auto found_it = data.find("foo");
-	//	assert(found_it->get<int>() == 1111);
-	//}
-	//catch (...) { assert(false); }
-	//std::cout << "TEST OK!" << std::endl << std::endl;
+	std::cout << "MAP FIND TEST" << std::endl;
+	try {
+		data = int_map;
+		auto found_it = data.find("foo");
+		assert(found_it->get<int>() == 1111);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
 
 	std::cout << "MAP ERASE BY ITERATOR TEST" << std::endl;
 	try {
