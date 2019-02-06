@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "TEST OK!" << std::endl << std::endl;
 
 
-
+/*
 	milk::bite data;
 
 	std::cout << "EMPTY SIZE TEST" << std::endl;
@@ -466,7 +466,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-
+	*/
 	//std::cout << " TEST" << std::endl;
 	//try {
 	//

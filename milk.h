@@ -16,38 +16,26 @@
 #include <exception>
 #include <stdexcept>
 
-
 namespace milk
 {
 	// templated classes for circular dependency resolution
 	// oder matters - do not modify!
-
-	template<typename B, typename G>
-	class bite_iterator_base;
-	//template<typename B, typename G>
-	//enum bite_iterator_base<B,G>::iterator_type_t;
-
-	template<typename B>
-	class grain_base;
-	//template<typename B>
-	//enum grain_base<B>::t_type;
-
-	template<typename B>
-	class bite_member_proxy_base;
-
+	/*
 	class bite;
+	class grain;
 
-	typedef bite_member_proxy_base<milk::bite> bite_member_proxy;
-	typedef grain_base<milk::bite> grain;
-	typedef bite_iterator_base<milk::bite, milk::grain> bite_iterator;
-	//typedef bite_iterator_base<milk::bite, milk::grain>::iterator_type_t bite_iterator::iterator_type_t;
-
+	class bite_iterator;
+	class bite_iterator_value;
+	class bite_member_proxy;
+	*/
 }
-
 // oder matters - do not modify!
 #include "milk/binary_proxy.h"
-#include "milk/bite_member_proxy.h"
-#include "milk/grain.h"
-namespace milk { typedef grain::t_type type; }
-#include "milk/bite_iterator.h"
+
 #include "milk/bite.h"
+
+//#include "milk/grain.h"
+//
+//#include "milk/bite_member_proxy.h"
+//#include "milk/bite_iterator.h"
+
