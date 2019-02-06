@@ -63,7 +63,7 @@ namespace milk
 				return grain->bin_extension();
 			}
 
-			milk::type type() const { return grain->get_type(); }
+			milk::t_type type() const { return grain->get_type(); }
 
 
 			bool is_map() 		const { return grain ? 	grain->is_map()		: false;}
@@ -198,7 +198,7 @@ namespace milk
 
 				if (is_scalar())
 				{
-					if (first == begin() && last == end() && first.iterator_type == bite_iterator::iterator_type_t::scalar_i && last.iterator_type == bite_iterator::iterator_type_t::scalar_i)
+					if (first == begin() && last == end() && first.iterator_type == milk::iterator_type_t::scalar_i && last.iterator_type == milk::iterator_type_t::scalar_i)
 					{
 						bite();
 						return first;

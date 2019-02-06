@@ -41,12 +41,7 @@ namespace milk
 		//typedef std::input_iterator_tag iterator_category;
 
 	private:
-		enum iterator_type_t {
-			map_i,
-			list_i,
-			scalar_i
-		};
-		iterator_type_t iterator_type;
+		milk::iterator_type_t iterator_type;
 
 		// instantiated only on member access operator;
 		// else, on use for dereferencing operator, this would not qualify const!

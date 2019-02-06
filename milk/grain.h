@@ -9,27 +9,15 @@ namespace milk
 			typedef std::map<std::string, B>	map_t;
 			typedef std::vector<B>				list_t;
 
-			enum t_type {
-				s_int,
-				s_fp,
-				s_byte,
-				s_bool,
-				n_str,
-				n_bin,
-				t_map,
-				t_list,
-				undefined
-			};
-
 		private:
 			union t_scalar_data {
 				int64_t			d_int;
-				double		d_fp;
+				double			d_fp;
 				unsigned char	d_byte;
 				bool			d_bool;
 			};
 			t_scalar_data scalar_data;
-			grain_base::t_type type;
+			milk::t_type type;
 
 			unsigned char bin_ext;
 
@@ -218,7 +206,7 @@ namespace milk
 
 			*/
 
-			t_type get_type() const { return type; }
+			milk::t_type get_type() const { return type; }
 
 			// CATCH INCOMPATIBLE CONVERSIONS AT COMPILE TIME!
 			template <typename T>
@@ -472,13 +460,13 @@ namespace milk
 				switch (type)
 				{
 				case t_map:
-					if (first.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::map_i && last.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::map_i)
+					if (first.iterator_type == milk::iterator_type_t::map_i && last.iterator_type == milk::iterator_type_t::map_i)
 						return milk::bite_iterator(d_map->erase(first.map_iterator, last.map_iterator));
 					else
 						throw std::runtime_error("iterators for erase operation of wrong type!");
 					break;
 				case t_list:
-					if (first.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::list_i && last.iterator_type == milk::bite_iterator_base<B, milk::grain_base<B>>::iterator_type_t::list_i)
+					if (first.iterator_type == milk::iterator_type_t::list_i && last.iterator_type == milk::iterator_type_t::list_i)
 						return milk::bite_iterator(d_list->erase(first.list_iterator, last.list_iterator));
 					else
 						throw std::runtime_error("iterators for erase operation of wrong type!");
