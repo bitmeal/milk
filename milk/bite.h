@@ -31,10 +31,10 @@ namespace milk
 			};
 
 			// constructor using value initialization; templated to avoid accidental initialization from bite_member_proxy types!
-			template<typename T, std::enable_if_t<
+			template<typename T, typename std::enable_if<
 				!std::is_same<milk::bite, T>::value &&
 				!std::is_same<milk::bite_member_proxy_base<milk::bite>, T>::value
-			>* = nullptr>
+			, std::nullptr_t>::type = nullptr>
 			bite(const T& val)
 			{
 				set(val);

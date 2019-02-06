@@ -90,10 +90,10 @@ namespace milk
 			*/
 
 			// integral types (bool has specialization - why?)
-			template <typename T, std::enable_if_t<
+			template <typename T, typename std::enable_if<
 				std::is_integral<T>::value &&
 				!std::is_same<T, bool>::value
-				>* = nullptr>
+				, std::nullptr_t>::type = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 				if (typeid(T) == typeid(char) || typeid(T) == typeid(unsigned char))
@@ -109,7 +109,7 @@ namespace milk
 			};
 
 			// floating point types
-			template <typename T, std::enable_if_t<std::is_floating_point<T>::value>* = nullptr>
+			template <typename T, typename std::enable_if<std::is_floating_point<T>::value, std::nullptr_t>::type = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 					type = s_fp;
@@ -118,9 +118,9 @@ namespace milk
 			};
 
 			// map types
-			template<typename T, std::enable_if_t<
+			template<typename T, typename std::enable_if<
 				sizeof(typename T::key_type) != 0
-			>* = nullptr >
+			, std::nullptr_t>::type = nullptr >
 				grain_base(const T& val) : grain_base()
 			{
 				type = t_map;
@@ -128,13 +128,13 @@ namespace milk
 			};
 
 			// container types with iterators
-			template<typename T, std::enable_if_t<
+			template<typename T, typename std::enable_if<
 				!std::is_same<std::string, T>::value &&
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
 				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
-				!std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value &&
-				!std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, unsigned char*>::value
-			>* = nullptr>
+				!std::is_same<typename std::remove_cv<decltype(std::declval<T>().data())>::type, char*>::value &&
+				!std::is_same<typename std::remove_cv<decltype(std::declval<T>().data())>::type, unsigned char*>::value
+			, std::nullptr_t>::type = nullptr>
 				grain_base(const T& val) : grain_base()
 			{
 				type = t_list;
@@ -142,13 +142,13 @@ namespace milk
 			};
 
 			// container types with iterators and char data; interpreted as binary!
-			template<typename T, std::enable_if_t<
+			template<typename T, typename std::enable_if<
 				!std::is_same<std::string, T>::value &&
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
 				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
-				(std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value ||
-				 std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, unsigned char*>::value)
-				>* = nullptr>
+				(std::is_same<typename std::remove_cv<decltype(std::declval<T>().data())>::type, char*>::value ||
+				 std::is_same<typename std::remove_cv<decltype(std::declval<T>().data())>::type, unsigned char*>::value)
+				, std::nullptr_t>::type = nullptr>
 				grain_base(const T& val) : grain_base()
 			{
 					type = n_bin;
@@ -156,12 +156,12 @@ namespace milk
 			};
 
 			// has size_t size() and char* data()
-			template<typename T, std::enable_if_t<
+			template<typename T, typename std::enable_if<
 				!std::is_same<std::string, T>::value &&
 				std::is_same<std::size_t, decltype(std::declval<T>().size())>::value &&
 				(std::is_same<const char*, decltype(std::declval<T>().data())>::value ||
 				std::is_same<const unsigned char*, decltype(std::declval<T>().data())>::value)
-			>* = nullptr>
+			, T>::type* = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 				type = n_bin;
@@ -174,14 +174,14 @@ namespace milk
 				*/
 			};
 
-			template <typename T, std::enable_if_t<std::is_same<std::string, T>::value>* = nullptr>
+			template <typename T, typename std::enable_if<std::is_same<std::string, T>::value, std::nullptr_t>::type = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 				type = n_str;
 				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
 			};
 
-			template <typename T, std::enable_if_t<std::is_same<bool, T>::value>* = nullptr>
+			template <typename T, typename std::enable_if<std::is_same<bool, T>::value, std::nullptr_t>::type = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 				type = s_bool;
@@ -193,7 +193,7 @@ namespace milk
 			grain_base(const char* &val) : grain_base(std::string(val)) { };
 
 			// handling: char* ch = "chararr"; milk::bite my_bite = ch;
-			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
+			template <typename T, typename std::enable_if<std::is_same<char*, typename std::remove_const<T>::type>::value, std::nullptr_t>::type = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
 
