@@ -1,0 +1,10 @@
+internal:
+  - name: milk
+    path: .
+    packages:
+    - name: bite
+      src:
+        - milk
+      include:
+        - milk
+
