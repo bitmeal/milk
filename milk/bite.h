@@ -35,13 +35,13 @@ namespace milk
 				!std::is_same<milk::bite, T>::value &&
 				!std::is_same<milk::bite_member_proxy_base<milk::bite>, T>::value
 			>* = nullptr>
-			bite(T& val)
+			bite(const T& val)
 			{
 				set(val);
 			};
 
 			template<typename T>
-			void set(const T val) {
+			void set(const T& val) {
 				if(!grain)
 					grain = std::make_shared<milk::grain>(val);
 				else
@@ -227,7 +227,8 @@ namespace milk
 				if (!is_map())
 					return *this;
 
-				milk::bite flat = std::map<std::string, milk::bite>();
+				// SHOULD WORK WITHOUT PRIOR MAP ASSIGNMENT
+				milk::bite flat;// = std::map<std::string, milk::bite>();
 
 				// drop recursive lambda for calls to flatten of members instead: better interface but more copying
 				// auto traverse = [&](milk::bite& map, std::string& nesting) { };

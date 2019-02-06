@@ -108,7 +108,7 @@ namespace milk
 					};
 
 				};
-				
+
 				switch (state)
 				{
 				case map:
@@ -118,7 +118,7 @@ namespace milk
 					 depth_manager.front().first = std::vector<milk::bite>{};
 					break;
 				}
-				
+
 				structure_state = state;
 
 				return true;
@@ -310,36 +310,36 @@ namespace milk
 			}
 		};
 
-		
+
 		template <typename T>
 		static void to_msgpack(milk::bite& data, msgpack::packer<T>& msgpack_packer)
 		{
 			if (data.is_scalar())
 			{
 				// pack data
-				milk::type type = data.type();
+				milk::t_type type = data.type();
 
 				switch (type)
 				{
-				case milk::type::s_int:
+				case milk::t_type::s_int:
 					msgpack_packer.pack_int(data.get<int>());
 					break;
-				case milk::type::s_fp:
+				case milk::t_type::s_fp:
 					msgpack_packer.pack_double(data.get<double>());
 					break;
-				case milk::type::s_byte:
+				case milk::t_type::s_byte:
 					msgpack_packer.pack_unsigned_char(data.get<unsigned char>());
 					break;
-				case milk::type::s_bool:
+				case milk::t_type::s_bool:
 					if (data.get<bool>())
 						msgpack_packer.pack_true();
 					else
 						msgpack_packer.pack_false();
 					break;
-				case milk::type::n_str:
+				case milk::t_type::n_str:
 					msgpack_packer.pack(data.get<std::string>());
 					break;
-				case milk::type::n_bin:
+				case milk::t_type::n_bin:
 					// copying binary is most inefficient way here, need access to data by pointer
 					milk::binary_proxy bin = data.get<milk::binary_proxy>();
 					if (data.bin_extension() == 0)
@@ -419,7 +419,7 @@ namespace milk
 		static void to(milk::bite& data, T& buffer, bool pack_top_level_list = false)
 		{
 			msgpack::packer<T> msgpack_packer(buffer);
-			
+
 
 			if (data.is_map())
 			{

@@ -435,7 +435,7 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-/*
+
 	std::cout << "MAP ITERATOR TEST: for_each" << std::endl;
 	std::cout << "USING ITERATOR BASED STD::UTILITY" << std::endl;
 	try {
@@ -445,14 +445,14 @@ int main(int argc, char* argv[]) {
 		data["parent"]["child"] = 9999;
 		data["parent"]["sibling"]["grandkid"] = "foobar";
 		data["parent"]["sibling"]["sibling"] = 1234;
-		
+
 		std::function<void(milk::bite&)> recfun = [&recfun](milk::bite& data) {
 			if (data.is_map() || data.is_list())
 			{
 				std::for_each(data.begin(), data.end(), recfun);
 				return;
 			}
-			
+
 			data = "bar";
 		};
 		std::for_each(data.begin(), data.end(), recfun);
@@ -466,7 +466,87 @@ int main(int argc, char* argv[]) {
 	}
 	catch (...) { assert(false); }
 	std::cout << "TEST OK!" << std::endl << std::endl;
-*/
+
+	std::cout << "MAP FLATTEN TEST" << std::endl;
+	try {
+		data.clear();
+		//alphabetical order!
+		data["a_foo"] = 1;
+		data["b_bar"] = 0.6;
+		data["c_parent"]["a_child"] = 9999;
+		data["c_parent"]["a_sibling"] = "foo";
+
+		milk::bite flat = data.flatten();
+
+		//alphabetical order!
+		std::vector<std::string> compare = {"a_foo", "b_bar", "c_parent.a_child", "c_parent.a_sibling"};
+
+		auto flatIt = flat.begin();
+		auto compareIt = compare.begin();
+
+		assert(flat.is_map());
+		assert(flat.size() == 4);
+		for(; flatIt != flat.end() && compareIt != compare.end(); ++compareIt,++flatIt)
+			assert(flatIt->first == *compareIt);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP FLATTEN TEST" << std::endl;
+	std::cout << "USING SPECIFIED DELIMITER: '/'" << std::endl;
+	try {
+		data.clear();
+		//alphabetical order!
+		data["a_foo"] = 1;
+		data["b_bar"] = 0.6;
+		data["c_parent"]["a_child"] = 9999;
+		data["c_parent"]["a_sibling"] = "foo";
+
+		milk::bite flat = data.flatten('/');
+
+		//alphabetical order!
+		std::vector<std::string> compare = {"a_foo", "b_bar", "c_parent/a_child", "c_parent/a_sibling"};
+
+		auto flatIt = flat.begin();
+		auto compareIt = compare.begin();
+
+		assert(flat.is_map());
+		assert(flat.size() == 4);
+		for(; flatIt != flat.end() && compareIt != compare.end(); ++compareIt,++flatIt)
+			assert(flatIt->first == *compareIt);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+	std::cout << "MAP FLATTEN TEST" << std::endl;
+	std::cout << "PROTECT KEYS BY PREFIX" << std::endl;
+	try {
+		data.clear();
+		//alphabetical order!
+		data["a_foo"] = 1;
+		data["b_bar"] = 0.6;
+		data["c_parent"]["$a_child"] = 9999; // <-- protect by $ character
+		data["c_parent"]["a_sibling"] = "foo";
+
+		milk::bite flat = data.flatten('.', '$');
+
+		//alphabetical order!
+		std::vector<std::string> compare = {"a_foo", "b_bar", "c_parent", "c_parent.a_sibling"};
+
+		auto flatIt = flat.begin();
+		auto compareIt = compare.begin();
+
+		assert(flat.is_map());
+		assert(flat.size() == 4);
+		assert(flat["c_parent"].is_map());
+		assert(flat["c_parent"]["$a_child"].get<int>() == 9999);
+		for(; flatIt != flat.end() && compareIt != compare.end(); ++compareIt,++flatIt)
+			assert(flatIt->first == *compareIt);
+	}
+	catch (...) { assert(false); }
+	std::cout << "TEST OK!" << std::endl << std::endl;
+
+
 	//std::cout << " TEST" << std::endl;
 	//try {
 	//

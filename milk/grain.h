@@ -90,7 +90,10 @@ namespace milk
 			*/
 
 			// integral types (bool has specialization - why?)
-			template <typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+			template <typename T, std::enable_if_t<
+				std::is_integral<T>::value &&
+				!std::is_same<T, bool>::value
+				>* = nullptr>
 			grain_base(const T& val) : grain_base()
 			{
 				if (typeid(T) == typeid(char) || typeid(T) == typeid(unsigned char))
@@ -126,6 +129,7 @@ namespace milk
 
 			// container types with iterators
 			template<typename T, std::enable_if_t<
+				!std::is_same<std::string, T>::value &&
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
 				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
 				!std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value &&
@@ -139,6 +143,7 @@ namespace milk
 
 			// container types with iterators and char data; interpreted as binary!
 			template<typename T, std::enable_if_t<
+				!std::is_same<std::string, T>::value &&
 				!std::is_same<decltype(std::declval<T>().begin()), void>::value &&
 				!std::is_same<decltype(std::declval<T>().end()), void>::value &&
 				(std::is_same<std::remove_cv_t<decltype(std::declval<T>().data())>, char*>::value ||
@@ -169,6 +174,21 @@ namespace milk
 				*/
 			};
 
+			template <typename T, std::enable_if_t<std::is_same<std::string, T>::value>* = nullptr>
+			grain_base(const T& val) : grain_base()
+			{
+				type = n_str;
+				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
+			};
+
+			template <typename T, std::enable_if_t<std::is_same<bool, T>::value>* = nullptr>
+			grain_base(const T& val) : grain_base()
+			{
+				type = s_bool;
+				scalar_data.d_bool = val;
+			};
+
+
 			// handling: milk::bite my_bite = "string/chararr";
 			grain_base(const char* &val) : grain_base(std::string(val)) { };
 
@@ -176,19 +196,6 @@ namespace milk
 			template <typename T, std::enable_if_t<std::is_same<char*, std::remove_const_t<T>>::value>* = nullptr>
 			grain_base(const T& val) : grain_base(std::string(val)) { };
 
-			template<>
-			grain_base(const std::string& val) : grain_base()
-			{
-				type = n_str;
-				d_str_bin = std::make_unique<str_bin_t>(val.begin(), val.end());
-			};
-
-			template<>
-			grain_base(const bool& val) : grain_base()
-			{
-				type = s_bool;
-				scalar_data.d_bool = val;
-			};
 
 			void bin_extension(const unsigned char& val)
 			{
@@ -209,15 +216,27 @@ namespace milk
 			milk::t_type get_type() const { return type; }
 
 			// CATCH INCOMPATIBLE CONVERSIONS AT COMPILE TIME!
+/*
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value, T>::type
+			typename std::enable_if<
+				!std::is_same<bool, T>::value
+				&& !std::is_same<std::string, T>::value
+				&& !std::is_same<std::vector<unsigned char>, T>::value
+				&& !std::is_same<milk::binary_proxy, T>::value
+				&& !std::is_same<unsigned char, T>::value
+				&& !std::is_arithmetic<T>::value
+			, T>::type
 			get() const
 			{
 				static_assert(false, "you tried to convert to an incompatible type!");
 			}
-
+*/
 			template <typename T>
-			typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+			typename std::enable_if<
+				std::is_arithmetic<T>::value
+				&& !std::is_same<unsigned char, T>::value
+				&& !std::is_same<bool, T>::value
+			, T>::type
 			get() const
 			{
 				switch (type) {
@@ -232,6 +251,145 @@ namespace milk
 				throw std::runtime_error("cannot convert to arithmetic");
 
 			};
+
+
+			template<typename T>
+			typename std::enable_if<std::is_same<unsigned char, T>::value, T>::type
+			get() const
+			{
+				if (type == s_byte)
+					return scalar_data.d_byte;
+
+				throw std::runtime_error("cannot convert to string");
+			};
+
+			template<typename T>
+			typename std::enable_if<std::is_same<milk::binary_proxy, T>::value, T>::type
+			get() const
+			{
+
+				if (type == n_bin || type == n_str)
+				{
+					return milk::binary_proxy(d_str_bin->data(), d_str_bin->size());
+				}
+
+				switch (type) {
+				case s_int:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_int), sizeof(scalar_data.d_int));
+					break;
+				case s_fp:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_fp), sizeof(scalar_data.d_fp));
+					break;
+				case s_byte:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_byte), sizeof(scalar_data.d_byte));
+					break;
+				case s_bool:
+					return milk::binary_proxy((unsigned char*) &(scalar_data.d_bool), sizeof(scalar_data.d_bool));
+					break;
+				}
+
+				throw std::runtime_error("cannot get raw unsigned char pointer and size of this type!");
+
+			};
+
+			template<typename T>
+			typename std::enable_if<std::is_same<std::vector<unsigned char>, T>::value, T>::type
+			get() const
+			{
+				if (type == n_bin || type == n_str)
+				{
+					return *(d_str_bin.get());
+				}
+
+				std::vector<unsigned char> ch_vec;
+
+				switch (type) {
+				case s_int:
+					for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
+						ch_vec.push_back(*((char*) &(scalar_data.d_int) + i));
+					return ch_vec;
+					break;
+				case s_fp:
+					for (int i = 0; i < sizeof(scalar_data.d_int); ++i)
+						ch_vec.push_back(*((char*) &(scalar_data.d_fp) + i));
+					return ch_vec;
+					break;
+				case s_byte:
+					ch_vec.push_back(*((char*) &(scalar_data.d_byte)));
+					return ch_vec;
+					break;
+				case s_bool:
+					ch_vec.push_back(*((char*) &(scalar_data.d_bool)));
+					return ch_vec;
+					break;
+				}
+
+				throw std::runtime_error("cannot convert to char vector");
+
+			};
+
+			template<typename T>
+			typename std::enable_if<std::is_same<std::string, T>::value, T>::type
+			get() const
+			{
+				switch (type) {
+				case s_int:
+					return std::to_string(scalar_data.d_int);
+					break;
+				case s_fp:
+					return std::to_string(scalar_data.d_fp);
+					break;
+				case s_byte:
+					return std::to_string(scalar_data.d_byte);
+					break;
+				case s_bool:
+					return std::to_string(scalar_data.d_bool);
+					break;
+				case n_str:
+				case n_bin:
+					return std::string(d_str_bin->begin(), d_str_bin->end());
+					break;
+				}
+
+				//convert map and list to empty string?
+				throw std::runtime_error("cannot convert to string");
+
+			};
+
+			template<typename T>
+			typename std::enable_if<std::is_same<bool, T>::value, T>::type
+			get() const
+			{
+				switch (type) {
+				case s_bool:
+					return scalar_data.d_bool;
+					break;
+				case s_int:
+					return (scalar_data.d_int != 0);
+					break;
+				case s_fp:
+					return (scalar_data.d_fp != 0);
+					break;
+				case s_byte:
+					return (scalar_data.d_byte != 0);
+					break;
+				case n_str:
+				case n_bin:
+					return (d_str_bin->size() != 0);
+					break;
+				case t_list:
+					return (d_list->size() != 0);
+					break;
+				case t_map:
+					return (d_map->size() != 0);
+					break;
+				default:
+					return false;
+				}
+			};
+
+
+
 
 
 			unsigned char bin_extension() const
@@ -478,6 +636,7 @@ namespace milk
 			~grain_base() {};
 	};
 
+	/*
 	template<>
 	template<>
 	inline unsigned char grain_base<milk::bite>::get<unsigned char>() const
@@ -612,6 +771,6 @@ namespace milk
 			return false;
 		}
 	};
-
+	*/
 
 }

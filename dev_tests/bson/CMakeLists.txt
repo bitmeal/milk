@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-set (CMAKE_CXX_STANDARD 11)
+cmake_minimum_required(VERSION 3.11)
+set (CMAKE_CXX_STANDARD 14)
 
 # name project and provide version number
 set(TEST_NAME bson)
@@ -22,12 +22,8 @@ target_compile_definitions(libbsoncxx-static INTERFACE ${LIBBSONCXX_STATIC_DEFIN
 #target_include_directories(libbsoncxx INTERFACE ${LIBBSONCXX_INCLUDE_DIRS})
 
 # bson needs boost
-#find_package(Boost 1.56.0 REQUIRED)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	find_package(Boost REQUIRED)
-#	target_include_directories(libbsoncxx INTERFACE ${Boost_INCLUDE_DIRS})
-	target_include_directories(libbsoncxx-static INTERFACE ${Boost_INCLUDE_DIRS})
-endif()
+find_package(Boost REQUIRED)
+target_include_directories(libbsoncxx-static INTERFACE ${Boost_INCLUDE_DIRS})
 
 ######################
 # OPTIONS / SETUP
@@ -61,4 +57,3 @@ target_link_libraries(${TEST_NAME} libbsoncxx-static)
 enable_testing()
 add_test(${TEST_NAME}_test ${TEST_NAME})
 ######################
-

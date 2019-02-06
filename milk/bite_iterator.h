@@ -16,14 +16,6 @@ namespace milk
 		{
 			return B::operator=(other);
 		};
-
-		template<>
-		B& operator = (const B& other)
-		{
-			//return T::operator=(other);
-			*(this->grain) = *(other.grain);
-			return *this;
-		};
 	};
 
 

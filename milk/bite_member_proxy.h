@@ -28,10 +28,10 @@ namespace milk
 		B& mutable_idx(std::string key)
 		{
 			if (!this->grain)
-				set(std::map<std::string, B>());
+				this->set(std::map<std::string, B>());
 			// split calls as is_map() would dereference a nullpointer
-			if (!is_map())
-				set(std::map<std::string, B>());
+			if (!this->is_map())
+				this->set(std::map<std::string, B>());
 
 
 
@@ -42,24 +42,24 @@ namespace milk
 		}
 
 		template<typename T>
-		B& operator = (const T& other)
+		const B& operator = (const T& other)
 		{
 			//set<T>(other);
-			set(other);
+			this->set(other);
 			parent.mutable_idx(key) = *this;
 			return (B&) *this;
 		}
 
-		B& operator = (const char* ch)
+		const B& operator = (const char* ch)
 		{
 			//set<T>(other);
-			set(std::string(ch));
+			this->set(std::string(ch));
 			parent.mutable_idx(key) = *this;
 			return (B&) *this;
 		}
 
-		template<>
-		B& operator = (const B& other)
+		//template<>
+		const B& operator = (const B& other)
 		{
 			if (this->grain != other.grain)
 			{
@@ -77,12 +77,12 @@ namespace milk
 			return (B)*this;
 		}
 
-		template<>
-		B& operator = (const milk::bite_member_proxy& other)
+		//template<>
+		const B& operator = (const milk::bite_member_proxy_base<B>& other)
 		{
 			if (this->grain != other.grain)
 			{
-				if (grain)
+				if (this->grain)
 					*(this->grain) = milk::grain_base<B>(*(other.grain)); // should already set correct data if grain != 0 !? (grain is shared pointer)
 				else
 				{
@@ -96,6 +96,8 @@ namespace milk
 			return (B)*this;
 		}
 
+// SHOULD NOT BE NECCESSARY
+/*
 		bite_member_proxy_base<B>& operator = (const bite_member_proxy_base<B>& other)
 		{
 			if (this->grain != other.grain)
@@ -113,7 +115,7 @@ namespace milk
 
 			return *this;
 		}
-
+*/
 	};
 
 }

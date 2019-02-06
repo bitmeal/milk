@@ -133,7 +133,7 @@ namespace milk
 		static milk::bite as_map(const bsoncxx::document::view& data)
 		{
 			milk::bite bite = std::map<std::string, milk::bite>{};
-			
+
 			for (auto& it : data)
 			{
 				switch (it.type())
@@ -153,7 +153,7 @@ namespace milk
 			return bite;
 		};
 
-		
+
 		static bsoncxx::builder::basic::array pack_list(milk::bite& data)
 		{
 			using bsoncxx::builder::basic::array;
@@ -169,7 +169,7 @@ namespace milk
 					// pack data
 					switch (it.type())
 					{
-					case milk::type::s_int:
+					case milk::t_type::s_int:
 						switch (it.bin_extension())
 						{
 						case 0x09: // date
@@ -190,16 +190,16 @@ namespace milk
 							break;
 						}
 						break;
-					case milk::type::s_fp:
+					case milk::t_type::s_fp:
 						arr.append(it.get<double>());
 						break;
-					case milk::type::s_byte:
+					case milk::t_type::s_byte:
 						arr.append(it.get<unsigned char>());
 						break;
-					case milk::type::s_bool:
+					case milk::t_type::s_bool:
 						arr.append(it.get<bool>());
 						break;
-					case milk::type::n_str:
+					case milk::t_type::n_str:
 						switch (it.bin_extension())
 						{
 						case 0x0b: // regex
@@ -213,7 +213,7 @@ namespace milk
 							break;
 						}
 						break;
-					case milk::type::n_bin:
+					case milk::t_type::n_bin:
 						// copying binary is most inefficient way here, need access to data by pointer
 						milk::binary_proxy bin = it.get<milk::binary_proxy>();
 
@@ -249,7 +249,7 @@ namespace milk
 
 		};
 
-		
+
 		static bsoncxx::builder::basic::document pack_map(milk::bite& data)
 		{
 			using bsoncxx::builder::basic::kvp;
@@ -266,7 +266,7 @@ namespace milk
 					// pack data
 					switch (it.type())
 					{
-					case milk::type::s_int:
+					case milk::t_type::s_int:
 						switch (it.bin_extension())
 						{
 						case 0x09: // date
@@ -287,16 +287,16 @@ namespace milk
 							break;
 						}
 						break;
-					case milk::type::s_fp:
+					case milk::t_type::s_fp:
 						doc.append(kvp(it.first, it.get<double>()));
 						break;
-					case milk::type::s_byte:
+					case milk::t_type::s_byte:
 						doc.append(kvp(it.first, it.get<unsigned char>()));
 						break;
-					case milk::type::s_bool:
+					case milk::t_type::s_bool:
 						doc.append(kvp(it.first, it.get<bool>()));
 						break;
-					case milk::type::n_str:
+					case milk::t_type::n_str:
 						switch (it.bin_extension())
 						{
 						case 0x0b: // regex
@@ -310,7 +310,7 @@ namespace milk
 							break;
 						}
 						break;
-					case milk::type::n_bin:
+					case milk::t_type::n_bin:
 						// copying binary is most inefficient way here, need access to data by pointer
 						milk::binary_proxy bin = it.get<milk::binary_proxy>();
 

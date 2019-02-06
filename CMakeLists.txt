@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 14)
 
 project(milk)
 ######################
@@ -24,10 +24,16 @@ install(EXPORT milkTargets DESTINATION CMake)
 
 
 ######################
-# ADD TESTS
-option(BUILD_TESTS "Build tests. Uncheck for install only runs" OFF)
+# ADD TEST
+option(BUILD_TESTS "Build tests. Uncheck for install only runs" ON)
 
 if(BUILD_TESTS)
-	# include tests CMakeLists.txt
+	enable_testing()
+
+	set(TEST_NAME milk_test)
+	add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+	target_compile_definitions(${TEST_NAME} PRIVATE TEST_NAME="${TEST_NAME}")
+	target_include_directories(${TEST_NAME} PRIVATE ./)
+	add_test(${TEST_NAME} ${TEST_NAME})
 endif()
 ######################
