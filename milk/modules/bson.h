@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bsoncxx/document/value.hpp>
 #include <bsoncxx/document/view.hpp>
 
