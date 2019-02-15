@@ -90,12 +90,12 @@ namespace milk
 			// iterators
 			bite_iterator begin()
 			{
-				return grain->begin(this);
+				return grain ? grain->begin(this) : bite_iterator(this);
 			}
 
 			bite_iterator end()
 			{
-				return grain->end(this);
+				return grain ? grain->end(this) : bite_iterator(this);
 			}
 
 			// find(key); returns end iterator if not found and not map!
