@@ -158,6 +158,9 @@ namespace milk
 			bool visit_nil() {
 				return false; //cannot handle null-type
 			}
+			bool visit_boolean(bool v) {
+				return process_scalar(v);
+			}
 			bool visit_positive_integer(uint64_t v) {
 				return process_scalar(v);
 			}
