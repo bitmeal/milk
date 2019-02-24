@@ -9,10 +9,10 @@ namespace milk
 		friend B;
 
 	private:
-		milk::bite& parent;
+		B& parent;
 		std::string key;
 
-		bite_member_proxy_base(std::string key, milk::bite& parent, const std::shared_ptr<milk::grain_base<B>> data) : key(key), parent(parent), bite() // <-- grain(nullptr)
+		bite_member_proxy_base(std::string key, B& parent, const std::shared_ptr<milk::grain_base<B>> data) : key(key), parent(parent), B() // <-- grain(nullptr)
 		{
 			if (data)
 				this->grain = data;
