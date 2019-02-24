@@ -59,6 +59,7 @@ namespace milk
 	// ITERATOR value operator = overload
 	template<>
 	template<>
+	inline
 	milk::bite& bite_iterator_value<milk::bite>::operator = <milk::bite>(const milk::bite& other)
 	{
 		//return T::operator=(other);

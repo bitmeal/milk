@@ -1,3 +1,5 @@
+#pragma once
+
 namespace milk {
 
 	enum t_type {
